@@ -118,3 +118,26 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/card"
+  /card/{uuid}:
+    get:
+      summary: Returns card details
+      description: |
+        Returns the details of card with UUID `{uuid}`.
+
+        **Actors**: bank, user
+      parameters:
+        - name: uuid
+          in: path
+          description: The card UUID.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: The card with the requested UUID is found and it's details returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/card"
+        404:
+          $ref: "#/components/responses/404"
