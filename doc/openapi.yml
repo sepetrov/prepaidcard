@@ -36,6 +36,70 @@ components:
           schema:
             $ref: "#/components/schemas/error404"
   schemas:
+    authorizationRequest:
+      title: Authorization Request
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        cardUUID:
+          type: string
+          format: uuid
+        merchantUUID:
+          type: string
+          format: uuid
+        blockedAmount:
+          type: string
+          format: uint64
+        capturedAmount:
+          type: string
+          format: uint64
+        refundedAmount:
+          type: string
+          format: uint64
+        history:
+          type: array
+          items:
+            $ref: "#/components/schemas/authorizationRequestSnapshot"
+      example:
+        uuid: DC41D7A5-2D28-4DB9-9122-72FE708D4934
+        cardUUID: 228A37D0-3DA2-4E9E-AA61-11EFD39E0382
+        merchantUUID: 1EA91C35-3D61-472D-8080-CE5544DF3C4A
+        blockedAmount: "2099"
+        capturedAmount: "0"
+        refundedAmount: "0"
+        history:
+          - uuid: 584D99EC-8160-42B1-87BC-62476CC2045D
+            blockedAmount: "2099"
+            capturedAmount: "0"
+            refundedAmount: "0"
+            createdAt: "2018-01-20T16:28:43+00:00"
+    authorizationRequestSnapshot:
+      title: Authorization Request Snapshot
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        blockedAmount:
+          type: string
+          format: uint64
+        capturedAmount:
+          type: string
+          format: uint64
+        refundedAmount:
+          type: string
+          format: uint64
+        createdAt:
+          type: string
+          format: dateTime ISO8601
+      example:
+        uuid: 584D99EC-8160-42B1-87BC-62476CC2045D
+        blockedAmount: "2099"
+        capturedAmount: "1000"
+        refundedAmount: "0"
+        createdAt: "2018-01-20T16:28:43+00:00"
     card:
       title: Card
       type: object
@@ -180,3 +244,42 @@ paths:
             application/json:
               schema:
                   $ref: "#/components/schemas/error"
+  /authorization-request:
+    post:
+      summary: Creates authorizaton request
+      description: |
+        Creates authorizaton request from merchant with UUID `merchantUUID` to block `amount` pence (BPp) from card with UUID `cardUuid`.
+        
+        **Actor**: merchant
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                merchantUUID:
+                  type: string
+                  format: uuid
+                cardUUID:
+                  type: string
+                  format: uuid
+                amount:
+                  type: string
+                  format: uint64
+              example:
+                merchantUUID: 1EA91C35-3D61-472D-8080-CE5544DF3C4A
+                cardUUID: 228A37D0-3DA2-4E9E-AA61-11EFD39E0382
+                amount: "2099"
+      responses:
+        201:
+          description: The request is authorized and the authorization request details are returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/authorizationRequest"
+        422:
+          description: The request cannot be processed due to an error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
