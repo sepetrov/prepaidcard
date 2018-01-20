@@ -1,0 +1,8 @@
+version: "3"
+services:
+  doc:
+    build:
+      context:    .
+      dockerfile: Dockerfile.doc
+    ports:
+      - ${DOC_PORT}:80

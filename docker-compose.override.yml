@@ -1,0 +1,5 @@
+version: "3"
+services:
+  doc:
+    volumes:
+      - ./doc/openapi.yml:/var/www/doc/openapi.yml:ro

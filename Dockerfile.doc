@@ -1,0 +1,35 @@
+FROM nginx:1.12
+
+ARG SWAGGER_UI_VERSION=3.9.0
+
+WORKDIR /var/www
+
+# Copy Nginx configuration
+COPY infrastructure/doc/etc/nginx/default.conf /etc/nginx/conf.d/
+
+# Copy OpenAPI specification
+COPY doc/openapi.yml doc/openapi.yml
+
+# Install dependencies
+RUN set -ex ; \
+    apt-get update ; \
+    apt-get install -y \
+        curl \
+        unzip
+
+# Install Swagger UI
+RUN set -ex ; \
+    curl -L https://github.com/swagger-api/swagger-ui/archive/v${SWAGGER_UI_VERSION}.zip -o /tmp/swagger-ui.zip ; \
+    unzip /tmp/swagger-ui.zip -d /tmp/ ; \
+    cp -rv /tmp/swagger-ui-${SWAGGER_UI_VERSION}/dist/* /var/www/ ; \
+    sed -i 's@http://petstore.swagger.io/v2/swagger.json@/doc/openapi.yml@' index.html
+
+# Clean up
+RUN set -ex ; \
+    apt-get purge -y \
+        curl \
+        unzip \
+    ; \
+    apt autoremove -y ; \
+    rm -rf /var/lib/apt/lists/* ; \
+    rm -rf /tmp/swagger-ui*
