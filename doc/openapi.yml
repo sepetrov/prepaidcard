@@ -1,0 +1,28 @@
+openapi: 3.0.1
+info:
+  title: Prepaid Card API
+  description: |
+    This is a development exercise for building a prepaid card service written in Go.
+
+    The service has RESTful API and does not use any authentication mechanism. It is a fictional and the model is
+    intentionally simplified.
+
+    The service combines functionality to meet requirements of three actors:
+    - **bank**: this is the entity controlling the service and only authorised personell must have access to these endpoints;
+    - **user**: this is the cardholder;
+    - **merchant**: this is a merchant, which accepts card payments via the service.
+  version: 1.0.0
+servers:
+  -
+    url: "{protocol}://{host}:{port}/api"
+    variables:
+      protocol:
+        enum:
+          - http
+          - https
+        default: http
+      host:
+        default: localhost
+      port:
+        default: "8080"
+paths: {}
