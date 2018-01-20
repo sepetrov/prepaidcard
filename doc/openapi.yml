@@ -25,4 +25,37 @@ servers:
         default: localhost
       port:
         default: "8080"
-paths: {}
+components:
+  schemas:
+    card:
+      title: Card
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        availableBalance:
+          type: string
+          format: uint64
+        blockedBalance:
+          type: string
+          format: uint64
+      example:
+        uuid: 68022AD3-7A94-452E-AC9C-A64F14EE5CD1
+        availableBalance: "0"
+        blockedBalance: "0"
+paths:
+  /card:
+    post:
+      summary: Registers a new card
+      description: |
+        Registers a new card.
+
+        **Actor:** bank
+      responses:
+        201:
+          description: A card is successfully registered and the card details are returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/card"
