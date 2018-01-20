@@ -249,7 +249,7 @@ paths:
       summary: Creates authorizaton request
       description: |
         Creates authorizaton request from merchant with UUID `merchantUUID` to block `amount` pence (BPp) from card with UUID `cardUuid`.
-        
+
         **Actor**: merchant
       requestBody:
         content:
@@ -270,6 +270,37 @@ paths:
                 merchantUUID: 1EA91C35-3D61-472D-8080-CE5544DF3C4A
                 cardUUID: 228A37D0-3DA2-4E9E-AA61-11EFD39E0382
                 amount: "2099"
+      responses:
+        201:
+          description: The request is authorized and the authorization request details are returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/authorizationRequest"
+        422:
+          description: The request cannot be processed due to an error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+  /authorization-request/{uuid}/reverse:
+    post:
+      summary: Reverses authorizaton request
+      description: |
+        Reverses authorizaton request with `uuid`.
+
+        **Actor**: merchant
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: string
+                  format: uint64
+              example:
+                amount: "1099"
       responses:
         201:
           description: The request is authorized and the authorization request details are returned.
