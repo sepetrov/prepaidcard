@@ -141,3 +141,42 @@ paths:
                 $ref: "#/components/schemas/card"
         404:
           $ref: "#/components/responses/404"
+  /card/{uuid}/load:
+    post:
+      summary: Loads money onto card
+      description: |
+        Adds `amount` pence (GBp) to the balance of card with UUID `{uuid}` and returns the transaction UUID.
+
+        **Actors**: bank, user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: string
+                  format: uint64
+              example:
+                amount: "1950"
+      responses:
+        201:
+          description: Loads the card and returns the transaction reference.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uuid:
+                    type: string
+                    format: uuid
+                example:
+                  uuid: 373A8AF3-2712-46F3-B7E0-A23FD74E4270
+        404:
+            $ref: "#/components/responses/404"
+        422:
+          description: The request cannot be processed due to an error.
+          content:
+            application/json:
+              schema:
+                  $ref: "#/components/schemas/error"
