@@ -26,6 +26,15 @@ servers:
       port:
         default: "8080"
 components:
+  responses:
+    404:
+      title: Resource Not Found
+      description: The requested resource cannot be found.
+      $ref: "#/components/responses/404"
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/error404"
   schemas:
     card:
       title: Card
@@ -44,6 +53,56 @@ components:
         uuid: 68022AD3-7A94-452E-AC9C-A64F14EE5CD1
         availableBalance: "0"
         blockedBalance: "0"
+    error:
+      title: Error
+      $ref: "#/components/schemas/error"
+      type: object
+      description: Problem Details Object. See [RFC7807](https://tools.ietf.org/html/rfc7807#section-3.1).
+      properties:
+        type:
+          type: string
+          required: false
+          default: about:blank
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+          required: false
+        instance:
+          type: string
+          required: false
+      example:
+        type: /doc/error/validation
+        title: Validation Error
+        status: 422
+        invalidParameters:
+          - name: amount
+            reason: must be unsigned integer
+    error404:
+      title: Error Not Found
+      $ref: "#/components/schemas/error404"
+      type: object
+      description: Problem Details Object. See [RFC7807](https://tools.ietf.org/html/rfc7807#section-4.2).
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+          required: false
+        instance:
+          type: string
+          required: false
+      example:
+        type: about:blank
+        title: Not Found
+        status: 404
+        instance: /card/87656343-74BF-443D-B5F8-C683FD31CFE0
 paths:
   /card:
     post:
