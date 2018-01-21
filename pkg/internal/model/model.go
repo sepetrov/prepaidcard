@@ -2,6 +2,8 @@
 package model
 
 import (
+	"errors"
+	"math"
 	"time"
 
 	"github.com/satori/go.uuid"
@@ -32,6 +34,18 @@ type Card struct {
 	UUID             uuid.UUID
 	AvailableBalance uint64
 	BlockedBalance   uint64
+}
+
+// LoadMoney loads amount onto c.
+func (c *Card) LoadMoney(amount uint64) error {
+	if amount == 0 {
+		return errors.New("amount must be greater than zero")
+	}
+	if c.AvailableBalance > math.MaxUint64-amount {
+		return errors.New("available balance cannot exceed math.MaxUint64")
+	}
+	c.AvailableBalance += amount
+	return nil
 }
 
 // Transaction represents a transaction associated with a card.
