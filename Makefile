@@ -1,33 +1,52 @@
-.PHONY: clean dev doc logs ps start stop tail-logs up
-.DEFAULT_GOAL := up
+ .PHONY: clean dev doc exec install logs ps start stop tail-logs test test-all up
+.DEFAULT_GOAL:=up
+
+# variables
+BINARY:=prepaidcard
+PACKAGE:=github.com/sepetrov/prepaidcard
 
 # main targets
 clean:
-	docker-compose -p prepaidcard -f docker-compose.yml kill
-	docker-compose -p prepaidcard -f docker-compose.yml rm -vf
-	docker rmi -f $(shell docker-compose -p prepaidcard -f docker-compose.yml images -q 2>/dev/null) 2>/dev/null || true
+	BINARY=$(BINARY) PACKAGE=$(PACKAGE) docker-compose -p prepaidcard -f docker-compose.yml -f docker-compose.override.yml rm -fsv
+	-BINARY=$(BINARY) PACKAGE=$(PACKAGE) docker rmi -f $(shell PACKAGE=$(PACKAGE) docker-compose -p prepaidcard -f docker-compose.yml -f docker-compose.override.yml images -q 2>/dev/null)
 
 dev:
-	docker-compose -p prepaidcard -f docker-compose.yml -f docker-compose.override.yml up --remove-orphans -d doc
+	BINARY=$(BINARY) PACKAGE=$(PACKAGE) docker-compose -p prepaidcard -f docker-compose.yml -f docker-compose.override.yml up --remove-orphans -d api
 
 up:
-	docker-compose -p prepaidcard -f docker-compose.yml up --remove-orphans -d doc
+	BINARY=$(BINARY) PACKAGE=$(PACKAGE) docker-compose -p prepaidcard -f docker-compose.yml up --remove-orphans -d api
 
-# helper targets
+# helper targets for the host
+config:
+	@BINARY=$(BINARY) PACKAGE=$(PACKAGE) docker-compose -p prepaidcard -f docker-compose.yml -f docker-compose.override.yml config
+
 doc:
-	docker-compose -p prepaidcard -f docker-compose.yml up -d doc
+	BINARY=$(BINARY) PACKAGE=$(PACKAGE) docker-compose -p prepaidcard -f docker-compose.yml up -d doc
+
+exec:
+	BINARY=$(BINARY) PACKAGE=$(PACKAGE) docker-compose -p prepaidcard -f docker-compose.yml -f docker-compose.override.yml exec api sh
 
 logs:
-	docker-compose -p prepaidcard -f docker-compose.yml logs
+	BINARY=$(BINARY) PACKAGE=$(PACKAGE) docker-compose -p prepaidcard -f docker-compose.yml -f docker-compose.override.yml logs
 
 ps:
-	docker-compose -p prepaidcard -f docker-compose.yml ps
+	BINARY=$(BINARY) PACKAGE=$(PACKAGE) docker-compose -p prepaidcard -f docker-compose.yml -f docker-compose.override.yml  ps
 
 start:
-	docker-compose -p prepaidcard -f docker-compose.yml start
+	BINARY=$(BINARY) PACKAGE=$(PACKAGE) docker-compose -p prepaidcard -f docker-compose.yml -f docker-compose.override.yml start
 
 stop:
-	docker-compose -p prepaidcard -f docker-compose.yml stop
+	BINARY=$(BINARY) PACKAGE=$(PACKAGE) docker-compose -p prepaidcard -f docker-compose.yml -f docker-compose.override.yml stop
 
 tail-logs:
-	docker-compose -p prepaidcard -f docker-compose.yml logs -f
+	BINARY=$(BINARY) PACKAGE=$(PACKAGE) docker-compose -p prepaidcard -f docker-compose.yml -f docker-compose.override.yml logs -f
+
+# helper targets for the container
+install:
+	go install -v $(PACKAGE)/cmd/$(BINARY)
+
+test:
+	go test -v $(PACKAGE)/...
+
+test-all:
+	TEST_INTEGRATION=1 go test -v $(PACKAGE)/...

@@ -1,5 +1,14 @@
 version: "3"
 services:
+  api:
+    build:
+      context:    .
+      dockerfile: Dockerfile.api
+      args:
+        BINARY:  ${BINARY}
+        PACKAGE: ${PACKAGE}
+    ports:
+      - ${API_PORT}:8080
   doc:
     build:
       context:    .

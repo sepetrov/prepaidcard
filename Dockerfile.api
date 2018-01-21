@@ -1,0 +1,25 @@
+ARG BINARY
+ARG IMAGE=golang:1.9-alpine3.7
+
+FROM $IMAGE as builder
+
+ARG BINARY
+ARG PACKAGE
+
+WORKDIR /go/src/$PACKAGE
+
+COPY cmd cmd
+
+RUN set -ex ; \
+    apk update ; \
+    apk add git ; \
+    go install -v ${PACKAGE}/cmd/${BINARY}
+
+
+FROM $IMAGE
+
+ARG BINARY
+
+COPY --from=builder /go/bin/${BINARY} /usr/local/bin/docker-entrypoint
+
+ENTRYPOINT ["docker-entrypoint"]

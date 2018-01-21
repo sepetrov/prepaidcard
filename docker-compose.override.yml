@@ -1,5 +1,6 @@
 version: "3"
 services:
-  doc:
+  api:
+    entrypoint: ["sleep", "86400"]
     volumes:
-      - ./doc/openapi.yml:/var/www/doc/openapi.yml:ro
+      - ./:/go/src/${PACKAGE}/
