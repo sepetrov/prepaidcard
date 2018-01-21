@@ -13,6 +13,8 @@ COPY cmd cmd
 RUN set -ex ; \
     apk update ; \
     apk add git ; \
+    go get github.com/golang/dep/cmd/dep ; \
+    dep ensure ; \
     go install -v ${PACKAGE}/cmd/${BINARY}
 
 
