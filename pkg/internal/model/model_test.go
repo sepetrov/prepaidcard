@@ -67,3 +67,34 @@ func TestCard_BlockMoney(t *testing.T) {
 		}
 	})
 }
+
+func TestCard_ChargeMoney(t *testing.T) {
+	t.Run("cannot charge 0", func(t *testing.T) {
+		t.Parallel()
+		c := &Card{UUID: uuid.NewV4()}
+		if c.ChargeMoney(0) == nil {
+			t.Error("c.ChargeMoney(0) nil; want error")
+		}
+	})
+	t.Run("cannot charge more than the blocked balance", func(t *testing.T) {
+		t.Parallel()
+		c := &Card{UUID: uuid.NewV4(), BlockedBalance: 2}
+		if c.ChargeMoney(3) == nil {
+			t.Error("c.ChargeMoney(3) nil; want error")
+		}
+	})
+	t.Run("blocked balance can become zero", func(t *testing.T) {
+		t.Parallel()
+		c := &Card{UUID: uuid.NewV4(), AvailableBalance: 3, BlockedBalance: 4}
+		if c.ChargeMoney(4) != nil {
+			t.Fatalf("c.ChargeMoney(13) error; want nil")
+		}
+		if c.AvailableBalance != 3 {
+			t.Errorf("c.AvailableBalance == %+v; want 0", c.AvailableBalance)
+		}
+
+		if c.BlockedBalance != 0 {
+			t.Errorf("c.BlockedBalance == %+v; want 13", c.BlockedBalance)
+		}
+	})
+}

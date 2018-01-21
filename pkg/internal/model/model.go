@@ -61,6 +61,18 @@ func (c *Card) BlockMoney(amount uint64) error {
 	return nil
 }
 
+// ChargeMoney reduces the blocked balance with amount.
+func (c *Card) ChargeMoney(amount uint64) error {
+	if amount == 0 {
+		return errors.New("amount must be greater than zero")
+	}
+	if amount > c.BlockedBalance {
+		return errors.New("blocked balance is too low")
+	}
+	c.BlockedBalance -= amount
+	return nil
+}
+
 // Transaction represents a transaction associated with a card.
 type Transaction struct {
 	UUID             uuid.UUID
