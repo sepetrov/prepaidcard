@@ -36,5 +36,34 @@ func TestCard_LoadMoney(t *testing.T) {
 		}
 	})
 }
+
+func TestCard_BlockMoney(t *testing.T) {
+	t.Run("amount must be greater than zero", func(t *testing.T) {
+		t.Parallel()
+		c := &Card{UUID: uuid.NewV4()}
+		if c.BlockMoney(0) == nil {
+			t.Error("c.BlockMoney(0) nil; want error")
+		}
+	})
+	t.Run("available balance cannot become negative", func(t *testing.T) {
+		t.Parallel()
+		c := &Card{UUID: uuid.NewV4(), AvailableBalance: 13}
+		if c.BlockMoney(14) == nil {
+			t.Error("c.LoadMoney(math.MaxUint64) nil; want error")
+		}
+	})
+	t.Run("available balance can become zero", func(t *testing.T) {
+		t.Parallel()
+		c := &Card{UUID: uuid.NewV4(), AvailableBalance: 13}
+		if c.BlockMoney(13) != nil {
+			t.Fatalf("c.LoadMoney(math.MaxUint64) error; want nil")
+		}
+		if c.AvailableBalance != 0 {
+			t.Errorf("c.AvailableBalance == %+v; want 0", c.AvailableBalance)
+		}
+
+		if c.BlockedBalance != 13 {
+			t.Errorf("c.BlockedBalance == %+v; want 13", c.BlockedBalance)
+		}
 	})
 }
