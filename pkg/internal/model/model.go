@@ -20,9 +20,9 @@ type AuthorizationRequest struct {
 	history        []AuthorizationRequestSnapshot
 }
 
-// NewAuthorizationRequest creates new AuthorizationRequest if the request is authorised. It returns an error if the
-// request is not authorised.
-func NewAuthorizationRequest(card Card, merchant uuid.UUID, amount uint64) (*AuthorizationRequest, error) {
+// NewAuthorizationRequest creates new AuthorizationRequest and blocks amount on card if the request is authorised.
+// It returns an error if the request is not authorised.
+func NewAuthorizationRequest(card *Card, merchant uuid.UUID, amount uint64) (*AuthorizationRequest, error) {
 	if amount == 0 {
 		return &AuthorizationRequest{}, errors.New("amount must be greater than zero")
 	}
@@ -37,13 +37,39 @@ func NewAuthorizationRequest(card Card, merchant uuid.UUID, amount uint64) (*Aut
 		blockedAmount: amount,
 		createdAt:     time.Now(),
 	}
-	return &AuthorizationRequest{
+	req := &AuthorizationRequest{
 		uuid:          uuid.NewV4(),
 		cardUUID:      card.UUID(),
 		merchantUUID:  merchant,
 		blockedAmount: amount,
 		history:       []AuthorizationRequestSnapshot{snapshot},
-	}, nil
+	}
+	card.availableBalance -= amount
+	card.blockedBalance += amount
+	return req, nil
+}
+
+// Reverse decreases the blocked amount on card and updates req. It returns error if the request is not authorized.
+func (req *AuthorizationRequest) Reverse(card *Card, amount uint64) error {
+	if amount == 0 {
+		return errors.New("amount must be greater than zero")
+	}
+	if amount > req.blockedAmount {
+		return errors.New("cannot reverse more than the blocked amount")
+	}
+
+	card.availableBalance += amount
+	card.blockedBalance -= amount
+	req.blockedAmount -= amount
+	req.history = append(
+		req.history,
+		AuthorizationRequestSnapshot{
+			uuid:          uuid.NewV4(),
+			blockedAmount: req.blockedAmount,
+			createdAt:     time.Now(),
+		},
+	)
+	return nil
 }
 
 // UUID returns the UUID.
