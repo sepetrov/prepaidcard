@@ -23,6 +23,9 @@ type AuthorizationRequest struct {
 // NewAuthorizationRequest creates new AuthorizationRequest if the request is authorised. It returns an error if the
 // request is not authorised.
 func NewAuthorizationRequest(card Card, merchant uuid.UUID, amount uint64) (*AuthorizationRequest, error) {
+	if amount == 0 {
+		return &AuthorizationRequest{}, errors.New("amount must be greater than zero")
+	}
 	if card.AvailableBalance() < amount {
 		return &AuthorizationRequest{}, errors.New("available balance is too low")
 	}
@@ -43,6 +46,41 @@ func NewAuthorizationRequest(card Card, merchant uuid.UUID, amount uint64) (*Aut
 	}, nil
 }
 
+// UUID returns the UUID.
+func (req *AuthorizationRequest) UUID() uuid.UUID {
+	return req.uuid
+}
+
+// CardUUID returns the card UUID.
+func (req *AuthorizationRequest) CardUUID() uuid.UUID {
+	return req.cardUUID
+}
+
+// MerchantUUID returns the merchant UUID.
+func (req *AuthorizationRequest) MerchantUUID() uuid.UUID {
+	return req.merchantUUID
+}
+
+// BlockedAmount returns the blocked amount.
+func (req *AuthorizationRequest) BlockedAmount() uint64 {
+	return req.blockedAmount
+}
+
+// CapturedAmount returns the blocked amount.
+func (req *AuthorizationRequest) CapturedAmount() uint64 {
+	return req.capturedAmount
+}
+
+// RefundedAmount returns the blocked amount.
+func (req *AuthorizationRequest) RefundedAmount() uint64 {
+	return req.refundedAmount
+}
+
+// History returns the log of changes.
+func (req *AuthorizationRequest) History() []AuthorizationRequestSnapshot {
+	return req.history
+}
+
 // AuthorizationRequestSnapshot represents a snapshot of AuthorizationRequest.
 type AuthorizationRequestSnapshot struct {
 	uuid           uuid.UUID
@@ -50,6 +88,31 @@ type AuthorizationRequestSnapshot struct {
 	capturedAmount uint64
 	refundedAmount uint64
 	createdAt      time.Time
+}
+
+// UUID returns the UUID.
+func (s AuthorizationRequestSnapshot) UUID() uuid.UUID {
+	return s.uuid
+}
+
+// BlockedAmount returns the blocked amount.
+func (s AuthorizationRequestSnapshot) BlockedAmount() uint64 {
+	return s.blockedAmount
+}
+
+// CapturedAmount returns the blocked amount.
+func (s AuthorizationRequestSnapshot) CapturedAmount() uint64 {
+	return s.capturedAmount
+}
+
+// RefundedAmount returns the blocked amount.
+func (s AuthorizationRequestSnapshot) RefundedAmount() uint64 {
+	return s.refundedAmount
+}
+
+// CreatedAt returns the time when the snapshot was taken.
+func (s AuthorizationRequestSnapshot) CreatedAt() time.Time {
+	return s.createdAt
 }
 
 // Card represents a prepaid card.
