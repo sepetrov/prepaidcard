@@ -186,6 +186,22 @@ func (c *Card) BlockMoney(amount uint64) error {
 	return nil
 }
 
+// ReleaseMoney releases blocked amount.
+func (c *Card) ReleaseMoney(amount uint64) error {
+	if amount == 0 {
+		return errors.New("amount must be greater than zero")
+	}
+	if amount > c.blockedBalance {
+		return errors.New("cannot release more than the blocked balance")
+	}
+	if amount > math.MaxUint64-c.availableBalance {
+		return errors.New("available balance cannot exceed math.MaxUint64")
+	}
+	c.availableBalance += amount
+	c.blockedBalance -= amount
+	return nil
+}
+
 // ChargeMoney reduces the blocked balance with amount.
 func (c *Card) ChargeMoney(amount uint64) error {
 	if amount == 0 {
