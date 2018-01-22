@@ -161,6 +161,20 @@ func TestNewAuthorizationRequest(t *testing.T) {
 }
 
 func TestAuthorizationRequest_Reverse(t *testing.T) {
+	t.Run("cannot reverse from different card", func(t *testing.T) {
+		c1 := mustCard(t, 1, 0)
+		c2 := mustCard(t, 10, 10)
+		if c1.UUID() == c2.UUID() {
+			t.Fatalf("c1.UUID() == c2.UUID(); want %v != %v", c1.UUID(), c2.UUID())
+		}
+		req, err := model.NewAuthorizationRequest(c1, uuid.NewV4(), 1)
+		if err != nil {
+			t.Errorf("NewAuthorizationRequest() = AuthorizationRequest{}, %v; want AuthorizationRequest{}, nil", err)
+		}
+		if err := req.Reverse(c2, 1); err == nil {
+			t.Error("req.Reverse(c2, 0) = nil; want error")
+		}
+	})
 	t.Run("cannot reverse 0", func(t *testing.T) {
 		c := model.NewCard()
 		c.LoadMoney(100)

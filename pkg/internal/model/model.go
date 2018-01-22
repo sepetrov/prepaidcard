@@ -44,6 +44,9 @@ func NewAuthorizationRequest(card *Card, merchant uuid.UUID, amount uint64) (*Au
 
 // Reverse decreases the blocked amount on card and updates req. It returns error if the request is not authorized.
 func (req *AuthorizationRequest) Reverse(card *Card, amount uint64) error {
+	if card.UUID() != req.cardUUID {
+		return errors.New("cannot reverse from different card")
+	}
 	if amount == 0 {
 		return errors.New("amount must be greater than zero")
 	}
