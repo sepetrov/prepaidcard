@@ -1,21 +1,23 @@
-package model
+package model_test
 
 import (
 	"math"
 	"testing"
+
+	"github.com/sepetrov/prepaidcard/pkg/internal/model"
 )
 
 func TestCard_LoadMoney(t *testing.T) {
 	t.Run("amount must be greater than zero", func(t *testing.T) {
 		t.Parallel()
-		c := NewCard()
+		c := model.NewCard()
 		if c.LoadMoney(0) == nil {
 			t.Error("c.LoadBalance(0) nil; want error")
 		}
 	})
 	t.Run("available balance cannot become greater than math.MaxUint64", func(t *testing.T) {
 		t.Parallel()
-		c := NewCard()
+		c := model.NewCard()
 		if err := c.LoadMoney(1); err != nil {
 			t.Fatalf("c.LoadMoney(1) err; want nil; %v", err)
 		}
@@ -25,7 +27,7 @@ func TestCard_LoadMoney(t *testing.T) {
 	})
 	t.Run("available balance can reach math.MaxUint64", func(t *testing.T) {
 		t.Parallel()
-		c := NewCard()
+		c := model.NewCard()
 		if err := c.LoadMoney(math.MaxUint64); err != nil {
 			t.Errorf("c.LoadMoney(math.MaxUint64) %v; want nil", err)
 		}
@@ -41,14 +43,14 @@ func TestCard_LoadMoney(t *testing.T) {
 func TestCard_BlockMoney(t *testing.T) {
 	t.Run("amount must be greater than zero", func(t *testing.T) {
 		t.Parallel()
-		c := NewCard()
+		c := model.NewCard()
 		if c.BlockMoney(0) == nil {
 			t.Error("c.BlockMoney(0) nil; want error")
 		}
 	})
 	t.Run("available balance cannot become negative", func(t *testing.T) {
 		t.Parallel()
-		c := NewCard()
+		c := model.NewCard()
 		if err := c.LoadMoney(13); err != nil {
 			t.Fatalf("c.LoadMoney(13) err; want nil; %v", err)
 		}
@@ -58,7 +60,7 @@ func TestCard_BlockMoney(t *testing.T) {
 	})
 	t.Run("available balance can become zero", func(t *testing.T) {
 		t.Parallel()
-		c := NewCard()
+		c := model.NewCard()
 		if err := c.LoadMoney(13); err != nil {
 			t.Fatalf("c.LoadMoney(13) err; want nil; %v", err)
 		}
@@ -78,14 +80,14 @@ func TestCard_BlockMoney(t *testing.T) {
 func TestCard_ChargeMoney(t *testing.T) {
 	t.Run("cannot charge 0", func(t *testing.T) {
 		t.Parallel()
-		c := NewCard()
+		c := model.NewCard()
 		if c.ChargeMoney(0) == nil {
 			t.Error("c.ChargeMoney(0) nil; want error")
 		}
 	})
 	t.Run("cannot charge more than the blocked balance", func(t *testing.T) {
 		t.Parallel()
-		c := NewCard()
+		c := model.NewCard()
 		if err := c.LoadMoney(5); err != nil {
 			t.Fatalf("c.LoadMoney(5) err; want nil; %v", err)
 		}
@@ -98,7 +100,7 @@ func TestCard_ChargeMoney(t *testing.T) {
 	})
 	t.Run("blocked balance can become zero", func(t *testing.T) {
 		t.Parallel()
-		c := NewCard()
+		c := model.NewCard()
 		if err := c.LoadMoney(5); err != nil {
 			t.Fatalf("c.LoadMoney(5) err; want nil; %v", err)
 		}
