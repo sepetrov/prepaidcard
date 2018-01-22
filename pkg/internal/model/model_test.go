@@ -57,51 +57,6 @@ func TestCard_BlockMoney(t *testing.T) {
 	})
 }
 
-func TestCard_ReleaseMoney(t *testing.T) {
-	t.Run("cannot release 0", func(t *testing.T) {
-		c := model.NewCard()
-		if err := c.ReleaseMoney(0); err == nil {
-			t.Errorf("c.ReleaseMoney(0) nil; want error")
-		}
-	})
-	t.Run("cannot release more than the blocked balance", func(t *testing.T) {
-		c := mustCard(t, 5, 5)
-		assertCardBalance(t, c, 0, 5)
-		if err := c.ReleaseMoney(6); err == nil {
-			t.Errorf("c.ReleaseMoney(6) nil; want error")
-		}
-	})
-	t.Run("cannot release money if available balance becomes more than math.MaxUint64", func(t *testing.T) {
-		c := mustCard(t, math.MaxUint64, 1)
-		if err := c.LoadMoney(1); err != nil {
-			t.Errorf("c.LoadMoney(1) %v; want nil", err)
-		}
-		assertCardBalance(t, c, math.MaxUint64, 1)
-		if err := c.ReleaseMoney(1); err == nil {
-			t.Errorf("c.ReleaseMoney(1) nil; want error")
-		}
-	})
-	t.Run("can release multiple times until the blocked balance is reaches 0", func(t *testing.T) {
-		c := mustCard(t, 10, 10)
-		assertCardBalance(t, c, 0, 10)
-
-		if err := c.ReleaseMoney(2); err != nil {
-			t.Errorf("c.ReleaseMoney(2) %v; want nil", err)
-		}
-		assertCardBalance(t, c, 2, 8)
-
-		if err := c.ReleaseMoney(5); err != nil {
-			t.Errorf("c.ReleaseMoney(5) %v; want nil", err)
-		}
-		assertCardBalance(t, c, 7, 3)
-
-		if err := c.ReleaseMoney(3); err != nil {
-			t.Errorf("c.ReleaseMoney(3) %v; want nil", err)
-		}
-		assertCardBalance(t, c, 10, 0)
-	})
-}
-
 func TestCard_ChargeMoney(t *testing.T) {
 	t.Run("cannot charge 0", func(t *testing.T) {
 		c := mustCard(t, 0, 0)
