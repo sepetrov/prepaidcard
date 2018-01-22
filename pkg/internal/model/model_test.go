@@ -28,29 +28,6 @@ func TestCard_LoadMoney(t *testing.T) {
 	})
 }
 
-func TestCard_ChargeMoney(t *testing.T) {
-	t.Run("cannot charge 0", func(t *testing.T) {
-		c := mustCard(t, 0, 0)
-		if c.ChargeMoney(0) == nil {
-			t.Error("c.ChargeMoney(0) nil; want error")
-		}
-	})
-	t.Run("cannot charge more than the blocked balance", func(t *testing.T) {
-		c := mustCard(t, 2, 2)
-		if c.ChargeMoney(3) == nil {
-			t.Error("c.ChargeMoney(3) nil; want error")
-		}
-	})
-	t.Run("blocked balance can become zero", func(t *testing.T) {
-		c := mustCard(t, 5, 4)
-		assertCardBalance(t, c, 1, 4)
-		if c.ChargeMoney(4) != nil {
-			t.Fatalf("c.ChargeMoney(4) error; want nil")
-		}
-		assertCardBalance(t, c, 1, 0)
-	})
-}
-
 func TestNewAuthorizationRequest(t *testing.T) {
 	t.Run("cannot block 0", func(t *testing.T) {
 		_, err := model.NewAuthorizationRequest(model.NewCard(), uuid.NewV4(), 0)

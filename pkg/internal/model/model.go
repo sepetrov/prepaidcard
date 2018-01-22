@@ -205,8 +205,8 @@ func (c *Card) releaseMoney(amount uint64) error {
 	return nil
 }
 
-// ChargeMoney reduces the blocked balance with amount.
-func (c *Card) ChargeMoney(amount uint64) error {
+// chargeMoney reduces the blocked balance with amount.
+func (c *Card) chargeMoney(amount uint64) error {
 	if amount == 0 {
 		return errors.New("amount must be greater than zero")
 	}
