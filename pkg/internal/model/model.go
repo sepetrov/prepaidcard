@@ -24,7 +24,7 @@ type AuthorizationRequest struct {
 // NewAuthorizationRequest creates new AuthorizationRequest and blocks amount on card if the request is authorised.
 // It returns an error if the request is not authorised.
 func NewAuthorizationRequest(card *Card, merchant uuid.UUID, amount uint64) (*AuthorizationRequest, error) {
-	if err := card.BlockMoney(amount); err != nil {
+	if err := card.blockMoney(amount); err != nil {
 		return &AuthorizationRequest{}, fmt.Errorf("cannot block the requested amount; %v", err)
 	}
 	snapshot := AuthorizationRequestSnapshot{
@@ -176,8 +176,8 @@ func (c *Card) LoadMoney(amount uint64) error {
 	return nil
 }
 
-// BlockMoney blocks amount from the available balance of c.
-func (c *Card) BlockMoney(amount uint64) error {
+// blockMoney blocks amount from the available balance of c.
+func (c *Card) blockMoney(amount uint64) error {
 	if amount == 0 {
 		return errors.New("amount must be greater than zero")
 	}
