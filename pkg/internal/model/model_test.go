@@ -11,77 +11,47 @@ import (
 
 func TestCard_LoadMoney(t *testing.T) {
 	t.Run("amount must be greater than zero", func(t *testing.T) {
-		t.Parallel()
 		c := model.NewCard()
 		if c.LoadMoney(0) == nil {
 			t.Error("c.LoadBalance(0) nil; want error")
 		}
 	})
 	t.Run("available balance cannot become greater than math.MaxUint64", func(t *testing.T) {
-		t.Parallel()
-		c := model.NewCard()
-		if err := c.LoadMoney(1); err != nil {
-			t.Fatalf("c.LoadMoney(1) err; want nil; %v", err)
-		}
+		c := mustCard(t, 1, 0)
 		if c.LoadMoney(math.MaxUint64) == nil {
 			t.Error("c.LoadMoney(math.MaxUint64) nil; want error")
 		}
 	})
 	t.Run("available balance can reach math.MaxUint64", func(t *testing.T) {
-		t.Parallel()
-		c := model.NewCard()
-		assertCardBalance(t, c, 0, 0)
-
-		if err := c.LoadMoney(math.MaxUint64); err != nil {
-			t.Errorf("c.LoadMoney(math.MaxUint64) %v; want nil", err)
-		}
+		c := mustCard(t, math.MaxUint64, 0)
 		assertCardBalance(t, c, math.MaxUint64, 0)
 	})
 }
 
 func TestCard_BlockMoney(t *testing.T) {
 	t.Run("amount must be greater than zero", func(t *testing.T) {
-		t.Parallel()
 		c := model.NewCard()
 		if c.BlockMoney(0) == nil {
 			t.Error("c.BlockMoney(0) nil; want error")
 		}
 	})
 	t.Run("available balance cannot become negative", func(t *testing.T) {
-		t.Parallel()
-		c := model.NewCard()
-		if err := c.LoadMoney(13); err != nil {
-			t.Fatalf("c.LoadMoney(13) err; want nil; %v", err)
-		}
+		c := mustCard(t, 13, 0)
 		if c.BlockMoney(14) == nil {
 			t.Error("c.BlockMoney(14) nil; want error")
 		}
 	})
 	t.Run("blocked balance cannot be more than math.MaxUint64", func(t *testing.T) {
-		t.Parallel()
-		c := model.NewCard()
-		if err := c.LoadMoney(math.MaxUint64); err != nil {
-			t.Fatalf("c.LoadMoney(13) err; want nil; %v", err)
-		}
-		if err := c.BlockMoney(math.MaxUint64); err != nil {
-			t.Errorf("c.BlockMoney(math.MaxUint64) %v; want nil", err)
-		}
+		c := mustCard(t, math.MaxUint64, math.MaxUint64)
 		if c.BlockMoney(1) == nil {
 			t.Error("c.BlockMoney(1) nil; want error")
 		}
 	})
 	t.Run("available balance can become zero", func(t *testing.T) {
-		t.Parallel()
-		c := model.NewCard()
-		assertCardBalance(t, c, 0, 0)
-
-		if err := c.LoadMoney(13); err != nil {
-			t.Fatalf("c.LoadMoney(13) err; want nil; %v", err)
-		}
+		c := mustCard(t, 13, 0)
 		assertCardBalance(t, c, 13, 0)
-
 		if c.BlockMoney(13) != nil {
-			t.Fatalf("c.LoadMoney(math.MaxUint64) error; want nil")
+			t.Fatalf("c.BlockMoney(13) error; want nil")
 		}
 		assertCardBalance(t, c, 0, 13)
 	})
@@ -89,40 +59,20 @@ func TestCard_BlockMoney(t *testing.T) {
 
 func TestCard_ChargeMoney(t *testing.T) {
 	t.Run("cannot charge 0", func(t *testing.T) {
-		t.Parallel()
-		c := model.NewCard()
+		c := mustCard(t, 0, 0)
 		if c.ChargeMoney(0) == nil {
 			t.Error("c.ChargeMoney(0) nil; want error")
 		}
 	})
 	t.Run("cannot charge more than the blocked balance", func(t *testing.T) {
-		t.Parallel()
-		c := model.NewCard()
-		if err := c.LoadMoney(5); err != nil {
-			t.Fatalf("c.LoadMoney(5) err; want nil; %v", err)
-		}
-		if err := c.BlockMoney(2); err != nil {
-			t.Fatalf("c.BlockMoney(2) nil; want error; %v", err)
-		}
+		c := mustCard(t, 2, 2)
 		if c.ChargeMoney(3) == nil {
 			t.Error("c.ChargeMoney(3) nil; want error")
 		}
 	})
 	t.Run("blocked balance can become zero", func(t *testing.T) {
-		t.Parallel()
-		c := model.NewCard()
-		assertCardBalance(t, c, 0, 0)
-
-		if err := c.LoadMoney(5); err != nil {
-			t.Fatalf("c.LoadMoney(5) err; want nil; %v", err)
-		}
-		assertCardBalance(t, c, 5, 0)
-
-		if err := c.BlockMoney(4); err != nil {
-			t.Fatalf("c.BlockMoney(4) nil; want error; %v", err)
-		}
+		c := mustCard(t, 5, 4)
 		assertCardBalance(t, c, 1, 4)
-
 		if c.ChargeMoney(4) != nil {
 			t.Fatalf("c.ChargeMoney(4) error; want nil")
 		}
@@ -265,4 +215,22 @@ func assertCardBalance(t *testing.T, c *model.Card, a, b uint64) {
 	if c.BlockedBalance() != b {
 		t.Errorf("c.BlockedBalance() = %v; want %v", c.BlockedBalance(), b)
 	}
+}
+
+func mustCard(t *testing.T, l, b uint64) *model.Card {
+	t.Helper()
+	c := model.NewCard()
+	if l > 0 {
+		err := c.LoadMoney(l)
+		if err != nil {
+			t.Fatalf("Card.LoadMoney(%v) %v; want nil", l, err)
+		}
+	}
+	if b > 0 {
+		err := c.BlockMoney(b)
+		if err != nil {
+			t.Fatalf("Card.BlockMoney(%v) %v; want nil", b, err)
+		}
+	}
+	return c
 }
