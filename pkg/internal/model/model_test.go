@@ -54,7 +54,20 @@ func TestCard_BlockMoney(t *testing.T) {
 			t.Fatalf("c.LoadMoney(13) err; want nil; %v", err)
 		}
 		if c.BlockMoney(14) == nil {
-			t.Error("c.LoadMoney(math.MaxUint64) nil; want error")
+			t.Error("c.BlockMoney(14) nil; want error")
+		}
+	})
+	t.Run("blocked balance cannot be more than math.MaxUint64", func(t *testing.T) {
+		t.Parallel()
+		c := model.NewCard()
+		if err := c.LoadMoney(math.MaxUint64); err != nil {
+			t.Fatalf("c.LoadMoney(13) err; want nil; %v", err)
+		}
+		if err := c.BlockMoney(math.MaxUint64); err != nil {
+			t.Errorf("c.BlockMoney(math.MaxUint64) %v; want nil", err)
+		}
+		if c.BlockMoney(1) == nil {
+			t.Error("c.BlockMoney(1) nil; want error")
 		}
 	})
 	t.Run("available balance can become zero", func(t *testing.T) {

@@ -3,6 +3,7 @@ package model
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"time"
 
@@ -23,14 +24,8 @@ type AuthorizationRequest struct {
 // NewAuthorizationRequest creates new AuthorizationRequest and blocks amount on card if the request is authorised.
 // It returns an error if the request is not authorised.
 func NewAuthorizationRequest(card *Card, merchant uuid.UUID, amount uint64) (*AuthorizationRequest, error) {
-	if amount == 0 {
-		return &AuthorizationRequest{}, errors.New("amount must be greater than zero")
-	}
-	if card.AvailableBalance() < amount {
-		return &AuthorizationRequest{}, errors.New("available balance is too low")
-	}
-	if card.BlockedBalance() > math.MaxUint64-amount {
-		return &AuthorizationRequest{}, errors.New("blocked balance cannot exceed math.MaxUint64")
+	if err := card.BlockMoney(amount); err != nil {
+		return &AuthorizationRequest{}, fmt.Errorf("cannot block the requested amount; %v", err)
 	}
 	snapshot := AuthorizationRequestSnapshot{
 		uuid:          uuid.NewV4(),
@@ -44,8 +39,6 @@ func NewAuthorizationRequest(card *Card, merchant uuid.UUID, amount uint64) (*Au
 		blockedAmount: amount,
 		history:       []AuthorizationRequestSnapshot{snapshot},
 	}
-	card.availableBalance -= amount
-	card.blockedBalance += amount
 	return req, nil
 }
 
