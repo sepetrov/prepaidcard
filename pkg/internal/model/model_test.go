@@ -183,6 +183,23 @@ func TestAuthorizationRequest_Reverse(t *testing.T) {
 			t.Error("req.Reverse(51) = nil; want error")
 		}
 	})
+	t.Run("cannot reverse money if available balance becomes more than math.MaxUint64", func(t *testing.T) {
+		c := mustCard(t, math.MaxUint64, 0)
+		req, err := model.NewAuthorizationRequest(c, uuid.NewV4(), 1)
+		if err != nil {
+			t.Errorf("NewAuthorizationRequest() = AuthorizationRequest{}, %v; want AuthorizationRequest{}, nil", err)
+		}
+		assertCardBalance(t, c, math.MaxUint64-1, 1)
+
+		if err := c.LoadMoney(1); err != nil {
+			t.Fatalf("c.LoadMoney(1) %v; want nil", err)
+		}
+		assertCardBalance(t, c, math.MaxUint64, 1)
+
+		if err := req.Reverse(c, 1); err == nil {
+			t.Fatal("req.Reverse(c, 1) nil; want error")
+		}
+	})
 	t.Run("can reverse multiple times until the blocked amount reaches 0", func(t *testing.T) {
 		c := model.NewCard()
 		c.LoadMoney(50)
@@ -212,7 +229,6 @@ func TestAuthorizationRequest_Reverse(t *testing.T) {
 		assertAuthorizationRequestBalance(t, req, 0, 0, 0)
 		assertCardBalance(t, c, 50, 0)
 	})
-
 }
 
 func assertAuthorizationRequestBalance(t *testing.T, req *model.AuthorizationRequest, b, c, r uint64) {

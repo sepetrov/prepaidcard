@@ -50,9 +50,9 @@ func (req *AuthorizationRequest) Reverse(card *Card, amount uint64) error {
 	if amount > req.blockedAmount {
 		return errors.New("cannot reverse more than the blocked amount")
 	}
-
-	card.availableBalance += amount
-	card.blockedBalance -= amount
+	if err := card.ReleaseMoney(amount); err != nil {
+		return fmt.Errorf("cannot reverse authorization request; %v", err)
+	}
 	req.blockedAmount -= amount
 	req.history = append(
 		req.history,
