@@ -11,6 +11,18 @@ func Must(t *testing.T, ok bool, s string, args ...interface{}) {
 	}
 }
 
+// MustE os a test helper, which interrupts test t if a != b.
+func MustE(t *testing.T, a interface{}, b interface{}, s string, args ...interface{}) {
+	if len(s) == 0 {
+		s = "got %#v != %#v, want a == b"
+	}
+	p := []interface{}{a, b}
+	if len(args) > 0 {
+		p = append(p, args...)
+	}
+	Must(t, a == b, s, p...)
+}
+
 // MustErr is a test helper, which interrupts test t and printfs s with args if err == nil.
 func MustErr(t *testing.T, err error, s string, args ...interface{}) {
 	t.Helper()
