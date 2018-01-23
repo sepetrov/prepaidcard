@@ -1,23 +1,23 @@
 package model_test
 
 import (
-	"fmt"
 	"math"
 	"testing"
 	"time"
 
 	"github.com/satori/go.uuid"
 	"github.com/sepetrov/prepaidcard/pkg/internal/model"
+	h "github.com/sepetrov/prepaidcard/pkg/internal/testing"
 )
 
 func TestCard_LoadMoney(t *testing.T) {
 	t.Run("amount must be greater than zero", func(t *testing.T) {
 		c := model.NewCard()
-		mustErr(t, c.LoadMoney(0), "c.LoadBalance(0) nil; want error")
+		h.MustErr(t, c.LoadMoney(0), "c.LoadBalance(0) nil; want error")
 	})
 	t.Run("available balance cannot become greater than math.MaxUint64", func(t *testing.T) {
 		c := mustCard(t, 1, 0)
-		mustErr(t, c.LoadMoney(math.MaxUint64), "c.LoadMoney(math.MaxUint64) nil; want error")
+		h.MustErr(t, c.LoadMoney(math.MaxUint64), "c.LoadMoney(math.MaxUint64) nil; want error")
 	})
 	t.Run("available balance can reach math.MaxUint64", func(t *testing.T) {
 		c := mustCard(t, math.MaxUint64, 0)
@@ -28,7 +28,7 @@ func TestCard_LoadMoney(t *testing.T) {
 func TestNewAuthorizationRequest(t *testing.T) {
 	t.Run("cannot block 0", func(t *testing.T) {
 		_, err := model.NewAuthorizationRequest(model.NewCard(), uuid.NewV4(), 0)
-		mustErr(t, err, "NewAuthorizationRequest() = AuthorizationRequest{}, nil; want AuthorizationRequest{}, error")
+		h.MustErr(t, err, "NewAuthorizationRequest() = AuthorizationRequest{}, nil; want AuthorizationRequest{}, error")
 	})
 	t.Run("success", func(t *testing.T) {
 		c := model.NewCard()
@@ -36,7 +36,7 @@ func TestNewAuthorizationRequest(t *testing.T) {
 		m := uuid.NewV4()
 		b := time.Now()
 		req, err := model.NewAuthorizationRequest(c, m, 70)
-		mustNotErrf(t, err, fmt.Sprintf("NewAuthorizationRequest() = %+v, %%v; want nil", req))
+		h.MustNotErr(t, err, "NewAuthorizationRequest() = %+v, %v; want nil", req)
 		if req.CardUUID() != c.UUID() {
 			t.Errorf("req.CardUUID() = %v; want %v", req.CardUUID(), c.UUID())
 		}
@@ -64,36 +64,36 @@ func TestAuthorizationRequest_Reverse(t *testing.T) {
 			t.Fatalf("c1.UUID() == c2.UUID(); want %v != %v", c1.UUID(), c2.UUID())
 		}
 		req := mustAuthorizationRequest(t, c1, 1)
-		mustErr(t, req.Reverse(c2, 1), "req.Reverse(c2, 0) = nil; want error")
+		h.MustErr(t, req.Reverse(c2, 1), "req.Reverse(c2, 0) = nil; want error")
 	})
 	t.Run("cannot reverse 0", func(t *testing.T) {
 		c, req := mustCardWithAuthorizationRequest(t, 100, 100)
-		mustErr(t, req.Reverse(c, 0), "req.Reverse(c, 0) = nil; want error")
+		h.MustErr(t, req.Reverse(c, 0), "req.Reverse(c, 0) = nil; want error")
 	})
 	t.Run("cannot reverse more than the blocked amount", func(t *testing.T) {
 		c, req := mustCardWithAuthorizationRequest(t, 100, 50)
-		mustErr(t, req.Reverse(c, 51), "req.Reverse(51) = nil; want error")
+		h.MustErr(t, req.Reverse(c, 51), "req.Reverse(51) = nil; want error")
 	})
 	t.Run("cannot reverse money if available balance becomes more than math.MaxUint64", func(t *testing.T) {
 		c, req := mustCardWithAuthorizationRequest(t, math.MaxUint64, 1)
-		mustNotErrf(t, c.LoadMoney(1), "c.LoadMoney(1) %v; want nil")
+		h.MustNotErr(t, c.LoadMoney(1), "c.LoadMoney(1) %v; want nil")
 		assertCardBalance(t, c, math.MaxUint64, 1)
-		mustErr(t, req.Reverse(c, 1), "req.Reverse(c, 1) nil; want error")
+		h.MustErr(t, req.Reverse(c, 1), "req.Reverse(c, 1) nil; want error")
 	})
 	t.Run("can reverse multiple times until the blocked amount reaches 0", func(t *testing.T) {
 		c, req := mustCardWithAuthorizationRequest(t, 50, 50)
 		assertAuthorizationRequestBalance(t, req, 50, 0, 0)
 		assertCardBalance(t, c, 0, 50)
 
-		mustNotErrf(t, req.Reverse(c, 10), "req.Reverse(10) = %v; want nil")
+		h.MustNotErr(t, req.Reverse(c, 10), "req.Reverse(10) = %v; want nil")
 		assertAuthorizationRequestBalance(t, req, 40, 0, 0)
 		assertCardBalance(t, c, 10, 40)
 
-		mustNotErrf(t, req.Reverse(c, 15), "req.Reverse(15) = %v; want nil")
+		h.MustNotErr(t, req.Reverse(c, 15), "req.Reverse(15) = %v; want nil")
 		assertAuthorizationRequestBalance(t, req, 25, 0, 0)
 		assertCardBalance(t, c, 25, 25)
 
-		mustNotErrf(t, req.Reverse(c, 25), "req.Reverse(25) = %v; want nil")
+		h.MustNotErr(t, req.Reverse(c, 25), "req.Reverse(25) = %v; want nil")
 		assertAuthorizationRequestBalance(t, req, 0, 0, 0)
 		assertCardBalance(t, c, 50, 0)
 	})
@@ -150,7 +150,7 @@ func mustCard(t *testing.T, l, b uint64) *model.Card {
 	t.Helper()
 	c := model.NewCard()
 	if l > 0 {
-		mustNotErrf(t, c.LoadMoney(l), fmt.Sprintf("Card.LoadMoney(%v) %%v; want nil; mustCard", l))
+		h.MustNotErr(t, c.LoadMoney(l), "Card.LoadMoney(%v) %v; want nil; mustCard", l)
 	}
 	if b > 0 {
 		mustAuthorizationRequest(t, c, b)
@@ -161,7 +161,7 @@ func mustCard(t *testing.T, l, b uint64) *model.Card {
 func mustAuthorizationRequest(t *testing.T, c *model.Card, b uint64) *model.AuthorizationRequest {
 	t.Helper()
 	req, err := model.NewAuthorizationRequest(c, uuid.NewV4(), b)
-	mustNotErrf(t, err, fmt.Sprintf("NewAuthorizationRequest(c, uuid.NewV4(), %v) %%v; want nil; mustAuthorizationRequest", b))
+	h.MustNotErr(t, err, "NewAuthorizationRequest(c, uuid.NewV4(), %v) %v; want nil; mustAuthorizationRequest", b)
 	return req
 }
 
@@ -170,18 +170,4 @@ func mustCardWithAuthorizationRequest(t *testing.T, l, b uint64) (*model.Card, *
 	c := mustCard(t, l, 0)
 	req := mustAuthorizationRequest(t, c, b)
 	return c, req
-}
-
-func mustErr(t *testing.T, err error, s string) {
-	t.Helper()
-	if err == nil {
-		t.Fatal(s)
-	}
-}
-
-func mustNotErrf(t *testing.T, err error, s string) {
-	t.Helper()
-	if err != nil {
-		t.Fatalf(s, err)
-	}
 }
