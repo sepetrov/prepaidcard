@@ -7,7 +7,6 @@ import (
 	"github.com/satori/go.uuid"
 	"github.com/sepetrov/prepaidcard/pkg/internal/event"
 	"github.com/sepetrov/prepaidcard/pkg/internal/model"
-	"github.com/sepetrov/prepaidcard/pkg/internal/service"
 )
 
 // Response is the response, which Service returns when a card is successfully created.
@@ -29,10 +28,10 @@ func New(s Saver, d Dispatcher) *Service {
 }
 
 // CreateCard creates a new card.
-func (svc *Service) CreateCard() (interface{}, error) {
+func (svc *Service) CreateCard() (Response, error) {
 	card := model.NewCard()
 	if err := svc.saver.SaveCard(card); err != nil {
-		return service.NewInternalServerErrorResponse(), fmt.Errorf("CreateCard() cannot persist card; %v", err)
+		return Response{}, fmt.Errorf("CreateCard() cannot persist card; %v", err)
 	}
 	svc.dispatcher.DispatchCardCreated(event.CardCreated{
 		UUID:     uuid.NewV4(),
