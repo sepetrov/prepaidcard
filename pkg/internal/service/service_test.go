@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"encoding/json"
 	"net/http"
 	"testing"
 
@@ -29,5 +30,41 @@ func TestErrorResponse_Headers(t *testing.T) {
 	t.Run("sets header content-type: application/problem+json", func(t *testing.T) {
 		r := service.ErrorResponse{}
 		h.MustE(t, r.Headers().Get("content-type"), "application/problem+json", "got Content-Type: %#v, want %#v")
+	})
+}
+
+func TestErrorResponse_String(t *testing.T) {
+	t.Run("uses the title if not empty", func(t *testing.T) {
+		r := service.ErrorResponse{Title: "Foo"}
+		h.MustE(t, r.String(), "Foo", "got title %q, want %q")
+	})
+	t.Run("uses the HTTP status code text if title is empty", func(t *testing.T) {
+		r := service.ErrorResponse{Status: 201}
+		h.MustE(t, r.String(), "Created", "got title %q, want %q")
+	})
+	t.Run("uses status code 500 if the status code is not recognised", func(t *testing.T) {
+		r := service.ErrorResponse{Status: 13}
+		h.MustE(t, r.String(), "Internal Server Error", "got title %q, want %q")
+	})
+}
+
+func TestErrorResponse_Body(t *testing.T) {
+	t.Run("must return json encoded error response", func(t *testing.T) {
+		r := service.ErrorResponse{}
+		d := struct {
+			Title  string `json:"title"`
+			Status int    `json:"status"`
+		}{
+			http.StatusText(500),
+			500,
+		}
+
+		got, err := r.MarshalJSON()
+		h.MustNotErr(t, err, "got JSON-encoding error; %v")
+
+		want, err := json.Marshal(d)
+		h.MustNotErr(t, err, "got JSON-encoding error; %v")
+
+		h.MustE(t, string(got), string(want), "got %s != %s, want them equal")
 	})
 }
