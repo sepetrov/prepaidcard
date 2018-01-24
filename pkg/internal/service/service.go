@@ -39,6 +39,7 @@ type ErrorResponse struct {
 var _ StatusCoder = &ErrorResponse{}
 var _ Headerer = &ErrorResponse{}
 var _ json.Marshaler = &ErrorResponse{}
+var _ error = &ErrorResponse{}
 
 // StatusCoder implements StatusCoder.
 func (r *ErrorResponse) StatusCode() int {
@@ -65,6 +66,11 @@ func (r *ErrorResponse) String() string {
 		return t
 	}
 	return http.StatusText(errStatusCode)
+}
+
+// Error implements error.
+func (r ErrorResponse) Error() string {
+	return r.String()
 }
 
 // MarshalJSON implements json.Marshaller.
