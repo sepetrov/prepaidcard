@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/sepetrov/prepaidcard/pkg/api"
 )
 
 var port = flag.String("port", "8080", "Port number")
@@ -28,6 +30,8 @@ func corsMiddleware(h http.HandlerFunc) http.HandlerFunc {
 func main() {
 	flag.Parse()
 	http.HandleFunc("/", corsMiddleware(handler))
+	api := api.New()
+	api.Attach(http.DefaultServeMux)
 	log.Println(fmt.Sprintf("Listenging on port %s", *port))
 	log.Fatalln(http.ListenAndServe(fmt.Sprintf(":%s", *port), nil))
 }

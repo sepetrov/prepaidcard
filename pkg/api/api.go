@@ -1,0 +1,63 @@
+package api
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+
+	"github.com/sepetrov/prepaidcard/pkg/internal/event"
+	"github.com/sepetrov/prepaidcard/pkg/internal/handler"
+	"github.com/sepetrov/prepaidcard/pkg/internal/handler/middleware"
+	"github.com/sepetrov/prepaidcard/pkg/internal/model"
+	"github.com/sepetrov/prepaidcard/pkg/internal/service/createcard"
+)
+
+const basePath = "/api"
+
+type API struct {
+	saver      createcard.Saver
+	dispatcher createcard.Dispatcher
+}
+
+func New() *API {
+	return &API{
+		saver:      &saver{},
+		dispatcher: &dispatcher{},
+	}
+}
+
+func (api *API) Attach(mux *http.ServeMux) {
+	mux.Handle(fmt.Sprintf("%s/card", basePath), routeAdapter(api.CreateCardHandler()))
+}
+
+func (api *API) CreateCardHandler() handler.Handler {
+	m := middleware.ErrorMiddleware()
+
+	var h handler.Handler
+	h = handler.NewCreateCard(createcard.New(api.saver, api.dispatcher))
+	h = m(h)
+
+	return h
+}
+
+func routeAdapter(h handler.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		h.Handle(context.TODO(), w, r)
+
+	})
+}
+
+// no-operational implementations
+
+type saver struct{}
+
+var _ createcard.Saver = &saver{}
+
+func (s *saver) SaveCard(*model.Card) error { return nil }
+
+type dispatcher struct{}
+
+var _ createcard.Dispatcher = &dispatcher{}
+
+func (d *dispatcher) DispatchCardCreated(_ event.CardCreated) {}
