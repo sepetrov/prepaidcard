@@ -21,6 +21,8 @@ func TestService_CreateCard(t *testing.T) {
 		h.Must(t, d.e.UUID != uuid.Nil, "got dispatcher event UUID %q == uuid.Nil, want !uuid.Nil", d.e.UUID)
 		h.MustE(t, s.c.UUID(), d.e.CardUUID, "got saved card UUID %q != dispatched card UUID %q, want the same")
 		h.MustE(t, r.UUID, s.c.UUID().String(), "got response card UUID %q != saver card UUID %q, want them equal")
+		h.MustE(t, r.AvailableBalance, "0", "got response availableBalance %v != %q; want them equal")
+		h.MustE(t, r.BlockedBalance, "0", "got response blockedBalance %v != %q; want them equal")
 	})
 	t.Run("returns error response and error if saver returns error", func(t *testing.T) {
 		s := &saver{err: errors.New("test saver failed")}

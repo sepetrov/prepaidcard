@@ -2,6 +2,7 @@ package createcard
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/satori/go.uuid"
@@ -40,8 +41,8 @@ func (svc *Service) CreateCard() (Response, error) {
 	})
 	return Response{
 		UUID:             card.UUID().String(),
-		AvailableBalance: string(card.AvailableBalance()),
-		BlockedBalance:   string(card.BlockedBalance()),
+		AvailableBalance: strconv.FormatUint(card.AvailableBalance(), 10),
+		BlockedBalance:   strconv.FormatUint(card.BlockedBalance(), 10),
 	}, nil
 }
 
