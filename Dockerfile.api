@@ -9,12 +9,17 @@ ARG PACKAGE
 WORKDIR /go/src/$PACKAGE
 
 COPY cmd cmd
+COPY pkg pkg
+COPY Gopkg.lock Gopkg.lock
+COPY Gopkg.toml Gopkg.toml
 
 RUN set -ex ; \
     apk update ; \
-    apk add git ; \
+    apk add git tree; \
+    tree ; \
     go get github.com/golang/dep/cmd/dep ; \
     dep ensure ; \
+    tree ; \
     go install -v ${PACKAGE}/cmd/${BINARY}
 
 
