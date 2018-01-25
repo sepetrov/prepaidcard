@@ -1,4 +1,4 @@
-# Prepaid Card
+# Prepaid Card [![Build Status](https://travis-ci.org/sepetrov/prepaidcard.svg?branch=master)](https://travis-ci.org/sepetrov/prepaidcard)
 
 This is a development exercise for building a prepaid card service written in Go.
 
