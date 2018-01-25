@@ -13,4 +13,3 @@ script:
   - go vet ./...
   - test -z "$(gofmt -d -s . | tee /dev/stderr)"
   - test -z "$(golint ./... | tee /dev/stderr)"
-  - $HOME/gopath/bin/goveralls  -coverprofile=coverage.out -service=travis-ci
