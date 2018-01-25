@@ -9,5 +9,5 @@ before_install:
 
 script:
   - go test -cover -race -v ./...
-  - test -z "$(go vet -x ./... | tee /dev/stderr)"
+  - test -z "$(go vet ./... | tee /dev/stderr)"
   - test -z "$(gofmt -d -s . | tee /dev/stderr)"
