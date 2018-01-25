@@ -5,11 +5,9 @@ go:
 
 before_install:
   - go get github.com/golang/dep/cmd/dep
-  - go get github.com/golang/lint/golint
   - dep ensure -v
 
 script:
   - go test -cover -race -v ./...
-  - go vet ./...
+  - test -z "$(go vet -x ./... | tee /dev/stderr)"
   - test -z "$(gofmt -d -s . | tee /dev/stderr)"
-  - test -z "$(golint ./... | tee /dev/stderr)"
