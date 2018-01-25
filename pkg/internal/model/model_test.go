@@ -108,7 +108,7 @@ func assertAuthorizationRequestBalance(t *testing.T, req *model.AuthorizationReq
 		t.Errorf("req.CapturedAmount() = %v; want %c", req.CapturedAmount(), c)
 	}
 	if req.RefundedAmount() != r {
-		t.Errorf("req.RefundedAmount() = %v; want %r", req.RefundedAmount(), r)
+		t.Errorf("req.RefundedAmount() = %v; want %v", req.RefundedAmount(), r)
 	}
 	assertAuthorizationRequestSnapshot(t, req)
 }
