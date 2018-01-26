@@ -4,7 +4,8 @@ go:
   - 1.9
 
 before_install:
-  - go get github.com/golang/dep/cmd/dep
+  - go get -v github.com/golang/dep/cmd/dep
+  - go get -v github.com/golang/lint/golint
   - dep ensure -v
 
 script:
