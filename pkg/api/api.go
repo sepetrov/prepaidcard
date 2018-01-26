@@ -1,3 +1,4 @@
+// Package api is the public interface of the prepaid card API.
 package api
 
 import (
@@ -14,11 +15,13 @@ import (
 
 const basePath = "/api"
 
+// API is the prepaid card application.
 type API struct {
 	saver      createcard.Saver
 	dispatcher createcard.Dispatcher
 }
 
+// New returns new API.
 func New() *API {
 	return &API{
 		saver:      &saver{},
@@ -26,10 +29,12 @@ func New() *API {
 	}
 }
 
+// Attach attaches the API handlers to mux.
 func (api *API) Attach(mux *http.ServeMux) {
 	mux.Handle(fmt.Sprintf("%s/card", basePath), routeAdapter(api.CreateCardHandler()))
 }
 
+// CreateCardHandler returns the handler for registration of new cards.
 func (api *API) CreateCardHandler() handler.Handler {
 	m := middleware.ErrorMiddleware()
 
@@ -42,9 +47,7 @@ func (api *API) CreateCardHandler() handler.Handler {
 
 func routeAdapter(h handler.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 		h.Handle(context.TODO(), w, r)
-
 	})
 }
 
@@ -54,7 +57,7 @@ type saver struct{}
 
 var _ createcard.Saver = &saver{}
 
-func (s *saver) SaveCard(*model.Card) error { return nil }
+func (s *saver) SaveCard(_ *model.Card) error { return nil }
 
 type dispatcher struct{}
 
