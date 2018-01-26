@@ -11,6 +11,7 @@ script:
   - go test -cover -race -v ./...
   - test -z "$(go vet ./... | tee /dev/stderr)"
   - test -z "$(gofmt -d -s . | tee /dev/stderr)"
+  - golint -set_exit_status cmd/... pkg/...
 
 notifications:
   email: false
