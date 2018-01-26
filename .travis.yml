@@ -6,10 +6,15 @@ go:
 before_install:
   - go get -v github.com/golang/dep/cmd/dep
   - go get -v github.com/golang/lint/golint
+  - go get -v github.com/mattn/goveralls
+  - go get -v golang.org/x/tools/cmd/cover
   - dep ensure -v
 
 script:
-  - go test -cover -race -v ./...
+  - >-
+      for N in $(go list ./...); do go test -v -covermode=count -coverprofile=${N//\//_}.out $N 1>/dev/null; done;
+      echo 'mode:'' count' > coverage.out && cat *.out | grep -v 'mode:' | sort -r | awk '{if($1 != last) {print $0;last=$1}}' >> coverage.out;
+      $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN;
   - test -z "$(go vet ./... | tee /dev/stderr)"
   - test -z "$(gofmt -d -s . | tee /dev/stderr)"
   - golint -set_exit_status cmd/... pkg/...
