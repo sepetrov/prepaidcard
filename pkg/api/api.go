@@ -1,3 +1,4 @@
+// Package api is the public interface of the prepaid card API.
 package api
 
 import (
