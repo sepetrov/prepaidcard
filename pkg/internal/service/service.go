@@ -41,7 +41,7 @@ var _ Headerer = &ErrorResponse{}
 var _ json.Marshaler = &ErrorResponse{}
 var _ error = &ErrorResponse{}
 
-// StatusCoder implements StatusCoder.
+// StatusCode implements StatusCoder.
 func (r *ErrorResponse) StatusCode() int {
 	if r.Status > 0 {
 		return r.Status
