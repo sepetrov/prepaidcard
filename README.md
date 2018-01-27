@@ -1,4 +1,7 @@
-# Prepaid Card [![Build Status](https://travis-ci.org/sepetrov/prepaidcard.svg?branch=master)](https://travis-ci.org/sepetrov/prepaidcard)
+# Prepaid Card 
+
+[![Build Status](https://travis-ci.org/sepetrov/prepaidcard.svg?branch=master)](https://travis-ci.org/sepetrov/prepaidcard) 
+[![Coverage Status](https://coveralls.io/repos/github/sepetrov/prepaidcard/badge.svg?branch=master)](https://coveralls.io/github/sepetrov/prepaidcard?branch=master)
 
 This is a development exercise for building a prepaid card service written in Go.
 
