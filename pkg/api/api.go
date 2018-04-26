@@ -3,6 +3,7 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -19,6 +20,7 @@ const basePath = "/api"
 type API struct {
 	saver      createcard.Saver
 	dispatcher createcard.Dispatcher
+	version    string
 }
 
 // New returns new API.
@@ -26,12 +28,27 @@ func New() *API {
 	return &API{
 		saver:      &saver{},
 		dispatcher: &dispatcher{},
+		version:    Version,
 	}
 }
 
 // Attach attaches the API handlers to mux.
 func (api *API) Attach(mux *http.ServeMux) {
-	mux.Handle(fmt.Sprintf("%s/card", basePath), routeAdapter(api.CreateCardHandler()))
+	mux.Handle(fmt.Sprintf("%s/card", basePath), handlerAdapter(api.CreateCardHandler()))
+	mux.Handle(fmt.Sprintf("%s/version", basePath), handlerAdapter(api.VersionHandler()))
+}
+
+// VersionHandler returns the handler for API version.
+func (api *API) VersionHandler() handler.Handler {
+	return handler.HandlerFunc(func(_ context.Context, w http.ResponseWriter, r *http.Request) error {
+		enc := json.NewEncoder(w)
+		enc.Encode(struct {
+			Version string `json:"version"`
+		}{
+			Version: api.version,
+		})
+		return nil
+	})
 }
 
 // CreateCardHandler returns the handler for registration of new cards.
@@ -45,7 +62,7 @@ func (api *API) CreateCardHandler() handler.Handler {
 	return h
 }
 
-func routeAdapter(h handler.Handler) http.Handler {
+func handlerAdapter(h handler.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h.Handle(context.TODO(), w, r)
 	})
