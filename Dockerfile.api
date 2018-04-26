@@ -1,5 +1,5 @@
 ARG BINARY
-ARG IMAGE=golang:1.9-alpine3.7
+ARG IMAGE=golang:1.10-alpine3.7
 
 FROM $IMAGE as builder
 
