@@ -79,7 +79,7 @@ func (api *API) Attach(mux *http.ServeMux) {
 
 // VersionHandler returns the handler for API version.
 func (api *API) VersionHandler() handler.Handler {
-	return handler.HandlerFunc(func(_ context.Context, w http.ResponseWriter, r *http.Request) error {
+	return handler.Func(func(_ context.Context, w http.ResponseWriter, r *http.Request) error {
 		enc := json.NewEncoder(w)
 		enc.Encode(struct {
 			Version string `json:"version"`

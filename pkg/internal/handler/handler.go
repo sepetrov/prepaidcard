@@ -9,13 +9,13 @@ import (
 	"github.com/sepetrov/prepaidcard/pkg/internal/service/createcard"
 )
 
-// HandlerFunc is an adapter to allow regular functions with the signature of
+// Func is an adapter to allow regular functions with the signature of
 // Handle method of Handler interface to be wrapped and used as the Handler
 // interface. This is useful when writing middleware.
-type HandlerFunc func(context.Context, http.ResponseWriter, *http.Request) error
+type Func func(context.Context, http.ResponseWriter, *http.Request) error
 
 // Handle implements Handler.
-func (h HandlerFunc) Handle(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (h Func) Handle(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	return h(ctx, w, r)
 }
 
