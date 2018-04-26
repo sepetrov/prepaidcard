@@ -20,22 +20,61 @@ const basePath = "/api"
 type API struct {
 	saver      createcard.Saver
 	dispatcher createcard.Dispatcher
+	middleware Middleware
 	version    string
 }
 
-// New returns new API.
-func New() *API {
-	return &API{
+// Middleware is API handler middleware.
+type Middleware func(http.Handler) http.Handler
+
+// Option configures an API instance.
+type Option func(*API) (*API, error)
+
+// VersionOption returns new option for setting API version.
+func VersionOption(version string) Option {
+	return func(api *API) (*API, error) {
+		api.version = version
+		return api, nil
+	}
+}
+
+// MiddlewareOption returns new option for setting middleware to api.
+func MiddlewareOption(middleware Middleware) Option {
+	return func(api *API) (*API, error) {
+		api.middleware = middleware
+		return api, nil
+	}
+}
+
+// New returns new API configured with options.
+func New(options ...Option) (*API, error) {
+	api := &API{
 		saver:      &saver{},
 		dispatcher: &dispatcher{},
 		version:    Version,
 	}
+	var err error
+	for _, option := range options {
+		api, err = option(api)
+		if err != nil {
+			return &API{}, err
+		}
+	}
+	return api, nil
+}
+
+// withMiddleware wraps handler h with the configuration middleware.
+func (api *API) withMiddleware(h http.Handler) http.Handler {
+	if api.middleware == nil {
+		return h
+	}
+	return api.middleware(h)
 }
 
 // Attach attaches the API handlers to mux.
 func (api *API) Attach(mux *http.ServeMux) {
-	mux.Handle(fmt.Sprintf("%s/card", basePath), handlerAdapter(api.CreateCardHandler()))
-	mux.Handle(fmt.Sprintf("%s/version", basePath), handlerAdapter(api.VersionHandler()))
+	mux.Handle(fmt.Sprintf("%s/card", basePath), api.withMiddleware(handlerAdapter(api.CreateCardHandler())))
+	mux.Handle(fmt.Sprintf("%s/version", basePath), api.withMiddleware(handlerAdapter(api.VersionHandler())))
 }
 
 // VersionHandler returns the handler for API version.
