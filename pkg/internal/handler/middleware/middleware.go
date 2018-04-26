@@ -17,7 +17,7 @@ type Middleware func(handler.Handler) handler.Handler
 // For all other errors a generic 500 service.ErrorResponse will be sent.
 func ErrorMiddleware() Middleware {
 	return func(prev handler.Handler) handler.Handler {
-		return handler.HanderFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+		return handler.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 			err := prev.Handle(ctx, w, r)
 
 			if err == nil {

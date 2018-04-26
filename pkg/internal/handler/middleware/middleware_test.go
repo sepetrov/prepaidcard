@@ -19,7 +19,7 @@ func TestErrorMiddleware(t *testing.T) {
 		m := middleware.ErrorMiddleware()
 
 		var h handler.Handler
-		h = handler.HanderFunc(func(_ context.Context, w http.ResponseWriter, _ *http.Request) error {
+		h = handler.HandlerFunc(func(_ context.Context, w http.ResponseWriter, _ *http.Request) error {
 			return errors.New("foo")
 		})
 		h = m(h)
@@ -45,7 +45,7 @@ func TestErrorMiddleware(t *testing.T) {
 		m := middleware.ErrorMiddleware()
 
 		var h handler.Handler
-		h = handler.HanderFunc(func(_ context.Context, w http.ResponseWriter, _ *http.Request) error {
+		h = handler.HandlerFunc(func(_ context.Context, w http.ResponseWriter, _ *http.Request) error {
 			w.Write([]byte("test"))
 			return nil
 		})
