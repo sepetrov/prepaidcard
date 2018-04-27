@@ -120,7 +120,7 @@ func assertAuthorizationRequestSnapshot(t *testing.T, req *model.AuthorizationRe
 		last := req.History()[len(req.History())-1]
 		beforeLast := req.History()[len(req.History())-2]
 		if last.CreatedAt().Before(beforeLast.CreatedAt()) {
-			t.Fatalf("incorrect change log order %s", req.History())
+			t.Fatalf("incorrect change log order %v", req.History())
 		}
 	}
 

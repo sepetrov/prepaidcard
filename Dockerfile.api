@@ -1,12 +1,21 @@
 ARG BINARY
-ARG IMAGE=golang:1.9-alpine3.7
+ARG IMAGE=golang:1.10-alpine3.7
+ARG VERSION
+
 
 FROM $IMAGE as builder
 
 ARG BINARY
 ARG PACKAGE
+ARG VERSION
 
 WORKDIR /go/src/$PACKAGE
+
+ADD https://raw.githubusercontent.com/golang/dep/master/install.sh /install-dep.sh
+RUN set -ex ; \
+    chmod +x /install-dep.sh ; \
+    /install-dep.sh ; \
+    rm /install-dep.sh
 
 COPY cmd cmd
 COPY pkg pkg
@@ -16,8 +25,7 @@ COPY Gopkg.toml Gopkg.toml
 RUN set -ex ; \
     apk update ; \
     apk add git tree; \
-    tree ; \
-    go get github.com/golang/dep/cmd/dep ; \
+    sed -ie "s/\"unknown\"/\"${VERSION}\"/" pkg/api/version.go ; \
     dep ensure ; \
     tree ; \
     go install -v ${PACKAGE}/cmd/${BINARY}

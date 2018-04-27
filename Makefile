@@ -4,6 +4,7 @@
 # variables
 BINARY:=prepaidcard
 PACKAGE:=github.com/sepetrov/prepaidcard
+VERSION:=$(shell git -C . describe --abbrev=0 --tags || git -C . rev-parse --short HEAD )
 
 # main targets
 clean:
@@ -11,10 +12,10 @@ clean:
 	-BINARY=$(BINARY) PACKAGE=$(PACKAGE) docker rmi -f $(shell PACKAGE=$(PACKAGE) docker-compose -p prepaidcard -f docker-compose.yml -f docker-compose.override.yml images -q 2>/dev/null)
 
 dev:
-	BINARY=$(BINARY) PACKAGE=$(PACKAGE) docker-compose -p prepaidcard -f docker-compose.yml -f docker-compose.override.yml up --remove-orphans -d api
+	BINARY=$(BINARY) PACKAGE=$(PACKAGE) VERSION="$(VERSION)" docker-compose -p prepaidcard -f docker-compose.yml -f docker-compose.override.yml up --build --remove-orphans -d api
 
 up:
-	BINARY=$(BINARY) PACKAGE=$(PACKAGE) docker-compose -p prepaidcard -f docker-compose.yml up --remove-orphans -d api
+	BINARY=$(BINARY) PACKAGE=$(PACKAGE) VERSION="$(VERSION)" docker-compose -p prepaidcard -f docker-compose.yml up --build --remove-orphans -d api
 
 # helper targets for the host
 config:
