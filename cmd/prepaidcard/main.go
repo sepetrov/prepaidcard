@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -19,21 +20,20 @@ func setCorsHeaders(w http.ResponseWriter) {
 	w.Header().Set("Access-Control-Allow-Origin", "*") // TODO: be more strict
 }
 
-// corsMiddleware adds CORS headers to allow requests from Swagger UI.
-func corsMiddleware(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		setCorsHeaders(w)
-		h.ServeHTTP(w, r)
-	})
-}
-
 func main() {
 	flag.Parse()
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		setCorsHeaders(w)
 		w.WriteHeader(http.StatusNotFound)
 	})
-	api, err := api.New(api.MiddlewareOption(corsMiddleware))
+
+	middlewareOption := api.MiddlewareOption(func(h api.Handler) api.Handler {
+		return api.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+			setCorsHeaders(w)
+			return h.Handle(ctx, w, r)
+		})
+	})
+	api, err := api.New(middlewareOption)
 	if err != nil {
 		log.Fatalf("cannot create an API instance: %v", err)
 	}
