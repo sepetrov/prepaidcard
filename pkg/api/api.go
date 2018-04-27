@@ -24,8 +24,23 @@ type API struct {
 	version    string
 }
 
+// HandlerFunc is an adapter to allow regular functions with the signature of
+// Handle method of Handler interface to be wrapped and used as the Handler
+// interface. This is useful when writing middleware.
+type HandlerFunc func(context.Context, http.ResponseWriter, *http.Request) error
+
+// Handle implements Handler.
+func (h HandlerFunc) Handle(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	return h(ctx, w, r)
+}
+
+// Handler is an interface for handling HTTP request.
+type Handler interface {
+	Handle(context.Context, http.ResponseWriter, *http.Request) error
+}
+
 // Middleware is API handler middleware.
-type Middleware func(http.Handler) http.Handler
+type Middleware func(Handler) Handler
 
 // Option configures an API instance.
 type Option func(*API) (*API, error)
@@ -64,7 +79,7 @@ func New(options ...Option) (*API, error) {
 }
 
 // withMiddleware wraps handler h with the configuration middleware.
-func (api *API) withMiddleware(h http.Handler) http.Handler {
+func (api *API) withMiddleware(h Handler) Handler {
 	if api.middleware == nil {
 		return h
 	}
@@ -73,12 +88,12 @@ func (api *API) withMiddleware(h http.Handler) http.Handler {
 
 // Attach attaches the API handlers to mux.
 func (api *API) Attach(mux *http.ServeMux) {
-	mux.Handle(fmt.Sprintf("%s/card", basePath), api.withMiddleware(handlerAdapter(api.CreateCardHandler())))
-	mux.Handle(fmt.Sprintf("%s/version", basePath), api.withMiddleware(handlerAdapter(api.VersionHandler())))
+	mux.Handle(fmt.Sprintf("%s/card", basePath), handlerAdapter(api.withMiddleware(api.CreateCardHandler())))
+	mux.Handle(fmt.Sprintf("%s/version", basePath), handlerAdapter(api.withMiddleware(api.VersionHandler())))
 }
 
 // VersionHandler returns the handler for API version.
-func (api *API) VersionHandler() handler.Handler {
+func (api *API) VersionHandler() Handler {
 	return handler.Func(func(_ context.Context, w http.ResponseWriter, r *http.Request) error {
 		enc := json.NewEncoder(w)
 		enc.Encode(struct {
@@ -91,17 +106,17 @@ func (api *API) VersionHandler() handler.Handler {
 }
 
 // CreateCardHandler returns the handler for registration of new cards.
-func (api *API) CreateCardHandler() handler.Handler {
+func (api *API) CreateCardHandler() Handler {
 	m := middleware.ErrorMiddleware()
 
-	var h handler.Handler
+	var h Handler
 	h = handler.NewCreateCard(createcard.New(api.saver, api.dispatcher))
 	h = m(h)
 
 	return h
 }
 
-func handlerAdapter(h handler.Handler) http.Handler {
+func handlerAdapter(h Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h.Handle(context.TODO(), w, r)
 	})
