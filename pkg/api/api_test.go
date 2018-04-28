@@ -37,3 +37,21 @@ func TestVersionHandler(t *testing.T) {
 		assert.MustE(t, strings.TrimSpace(w.Body.String()), fmt.Sprintf(`{"version":%q}`, v), "")
 	})
 }
+
+func TestMiddlewareOption(t *testing.T) {
+	var isCalled bool
+	m := func(h api.Handler) api.Handler {
+		return api.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+			isCalled = true
+			return h.Handle(ctx, w, r)
+		})
+	}
+	a, err := api.New(api.MiddlewareOption(m))
+	if err != nil {
+		t.Fatalf("cannot create API: %v", err)
+	}
+	a.VersionHandler().Handle(context.TODO(), httptest.NewRecorder(), httptest.NewRequest("GET", "http://example.com", nil))
+	if !isCalled {
+		t.Error("middeware not used")
+	}
+}
