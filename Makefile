@@ -4,7 +4,7 @@
 # variables
 BINARY:=prepaidcard
 PACKAGE:=github.com/sepetrov/prepaidcard
-VERSION:=$(shell git -C . describe --abbrev=0 --tags || git -C . rev-parse --short HEAD )
+VERSION:=$(shell git -C . describe --abbrev=0 --tags 2> /dev/null || git -C . rev-parse --short HEAD)
 
 # main targets
 clean:
