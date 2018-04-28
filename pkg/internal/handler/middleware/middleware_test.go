@@ -1,9 +1,12 @@
 package middleware_test
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -14,9 +17,9 @@ import (
 	assert "github.com/sepetrov/prepaidcard/pkg/internal/testing"
 )
 
-func TestErrorMiddleware(t *testing.T) {
+func TestError(t *testing.T) {
 	t.Run("renders net/http package error if not service.ErrorResponse", func(t *testing.T) {
-		m := middleware.ErrorMiddleware()
+		m := middleware.Error()
 
 		var h handler.Handler
 		h = handler.Func(func(_ context.Context, w http.ResponseWriter, _ *http.Request) error {
@@ -42,7 +45,7 @@ func TestErrorMiddleware(t *testing.T) {
 		t.Skipf("TODO")
 	})
 	t.Run("does nothing if the handle does not return error", func(t *testing.T) {
-		m := middleware.ErrorMiddleware()
+		m := middleware.Error()
 
 		var h handler.Handler
 		h = handler.Func(func(_ context.Context, w http.ResponseWriter, _ *http.Request) error {
@@ -64,5 +67,34 @@ func TestErrorMiddleware(t *testing.T) {
 
 		assert.MustE(t, resp.StatusCode, 200, "")
 		assert.MustE(t, strings.TrimSpace(string(body)), "test", "")
+	})
+}
+
+func TestErrorLog(t *testing.T) {
+	b := &bytes.Buffer{}
+	l := log.New(b, "", 0)
+	m := middleware.ErrorLog(l)
+	t.Run("logs errors", func(t *testing.T) {
+		defer b.Reset()
+		e := errors.New("foo")
+		h := m(handler.Func(func(_ context.Context, _ http.ResponseWriter, _ *http.Request) error { return e }))
+		err := h.Handle(context.TODO(), httptest.NewRecorder(), httptest.NewRequest("GET", "http://example.com", nil))
+		if want := fmt.Sprintf("%s\n", e); b.String() != want {
+			t.Errorf("want logged error %q, got %q", want, b.String())
+		}
+		if err != e {
+			t.Errorf("want error %#v, got error %#v", e, err)
+		}
+	})
+	t.Run("ignores sucessfully handled requests", func(t *testing.T) {
+		defer b.Reset()
+		h := m(handler.Func(func(_ context.Context, _ http.ResponseWriter, _ *http.Request) error { return nil }))
+		err := h.Handle(context.TODO(), httptest.NewRecorder(), httptest.NewRequest("GET", "http://example.com", nil))
+		if b.String() != "" {
+			t.Errorf("want no logs, got %q", b.String())
+		}
+		if err != nil {
+			t.Errorf("want nil, got error %#v", err)
+		}
 	})
 }
