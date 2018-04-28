@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/sepetrov/prepaidcard/pkg/internal/handler"
@@ -12,14 +13,13 @@ import (
 // Middleware is a handler.Handler wrapper.
 type Middleware func(handler.Handler) handler.Handler
 
-// ErrorMiddleware handles error returned by the wrapped handler prev.
+// Error handles error returned by the wrapped handler prev.
 // If the error is type service.ErrorResponse, it will be sent as a response.
 // For all other errors a generic 500 service.ErrorResponse will be sent.
-func ErrorMiddleware() Middleware {
+func Error() Middleware {
 	return func(prev handler.Handler) handler.Handler {
 		return handler.Func(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 			err := prev.Handle(ctx, w, r)
-
 			if err == nil {
 				return nil
 			}
@@ -42,6 +42,19 @@ func ErrorMiddleware() Middleware {
 			}
 			w.Write(j)
 			return nil
+		})
+	}
+}
+
+// ErrorLog logs the error returned by the wrapped handler prev.
+func ErrorLog(logger *log.Logger) Middleware {
+	return func(prev handler.Handler) handler.Handler {
+		return handler.Func(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+			err := prev.Handle(ctx, w, r)
+			if err != nil {
+				logger.Print(err)
+			}
+			return err
 		})
 	}
 }

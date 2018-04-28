@@ -5,6 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
 
 	"github.com/sepetrov/prepaidcard/pkg/internal/event"
@@ -20,6 +22,7 @@ const basePath = "/api"
 type API struct {
 	saver      createcard.Saver
 	dispatcher createcard.Dispatcher
+	logger     *log.Logger
 	middleware Middleware
 	version    string
 }
@@ -53,6 +56,14 @@ func VersionOption(version string) Option {
 	}
 }
 
+// LoggerOption returns new option for setting the logger.
+func LoggerOption(logger *log.Logger) Option {
+	return func(api *API) (*API, error) {
+		api.logger = logger
+		return api, nil
+	}
+}
+
 // MiddlewareOption returns new option for setting middleware to api.
 func MiddlewareOption(middleware Middleware) Option {
 	return func(api *API) (*API, error) {
@@ -75,6 +86,9 @@ func New(options ...Option) (*API, error) {
 			return &API{}, err
 		}
 	}
+	if api.logger == nil {
+		api.logger = log.New(ioutil.Discard, "", 0)
+	}
 	return api, nil
 }
 
@@ -84,6 +98,15 @@ func (api *API) withMiddleware(h Handler) Handler {
 		return h
 	}
 	return api.middleware(h)
+}
+
+// withAPIMiddleware wraps handler h with the common API middleware
+func (api *API) withAPIMiddleware(h Handler) Handler {
+	return middleware.ErrorLog(api.logger)(
+		middleware.Error()(
+			h,
+		),
+	)
 }
 
 // Attach attaches the API handlers to mux.
@@ -107,13 +130,7 @@ func (api *API) VersionHandler() Handler {
 
 // CreateCardHandler returns the handler for registration of new cards.
 func (api *API) CreateCardHandler() Handler {
-	m := middleware.ErrorMiddleware()
-
-	var h Handler
-	h = handler.NewCreateCard(createcard.New(api.saver, api.dispatcher))
-	h = m(h)
-
-	return h
+	return handler.NewCreateCard(createcard.New(api.saver, api.dispatcher))
 }
 
 func handlerAdapter(h Handler) http.Handler {
