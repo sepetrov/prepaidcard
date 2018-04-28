@@ -117,7 +117,7 @@ func (api *API) Attach(mux *http.ServeMux) {
 
 // VersionHandler returns the handler for API version.
 func (api *API) VersionHandler() Handler {
-	return handler.Func(func(_ context.Context, w http.ResponseWriter, r *http.Request) error {
+	h := handler.Func(func(_ context.Context, w http.ResponseWriter, r *http.Request) error {
 		enc := json.NewEncoder(w)
 		enc.Encode(struct {
 			Version string `json:"version"`
@@ -126,11 +126,13 @@ func (api *API) VersionHandler() Handler {
 		})
 		return nil
 	})
+	return api.withAPIMiddleware(h)
 }
 
 // CreateCardHandler returns the handler for registration of new cards.
 func (api *API) CreateCardHandler() Handler {
-	return handler.NewCreateCard(createcard.New(api.saver, api.dispatcher))
+	h := handler.NewCreateCard(createcard.New(api.saver, api.dispatcher))
+	return api.withAPIMiddleware(h)
 }
 
 func handlerAdapter(h Handler) http.Handler {
