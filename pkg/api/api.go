@@ -45,6 +45,10 @@ type Handler interface {
 // Middleware is API handler middleware.
 type Middleware func(Handler) Handler
 
+var noopMiddleware Middleware = func(h Handler) Handler {
+	return h
+}
+
 // Option configures an API instance.
 type Option func(*API) (*API, error)
 
@@ -77,6 +81,7 @@ func New(options ...Option) (*API, error) {
 	api := &API{
 		saver:      &saver{},
 		dispatcher: &dispatcher{},
+		middleware: noopMiddleware,
 		version:    Version,
 	}
 	var err error
@@ -92,27 +97,21 @@ func New(options ...Option) (*API, error) {
 	return api, nil
 }
 
-// withMiddleware wraps handler h with the configuration middleware.
+// withMiddleware wraps handler h with middleware.
 func (api *API) withMiddleware(h Handler) Handler {
-	if api.middleware == nil {
-		return h
-	}
-	return api.middleware(h)
-}
-
-// withAPIMiddleware wraps handler h with the common API middleware
-func (api *API) withAPIMiddleware(h Handler) Handler {
-	return middleware.ErrorLog(api.logger)(
-		middleware.Error()(
-			h,
+	return api.middleware(
+		middleware.ErrorLog(api.logger)(
+			middleware.Error()(
+				h,
+			),
 		),
 	)
 }
 
 // Attach attaches the API handlers to mux.
 func (api *API) Attach(mux *http.ServeMux) {
-	mux.Handle(fmt.Sprintf("%s/card", basePath), handlerAdapter(api.withMiddleware(api.CreateCardHandler())))
-	mux.Handle(fmt.Sprintf("%s/version", basePath), handlerAdapter(api.withMiddleware(api.VersionHandler())))
+	mux.Handle(fmt.Sprintf("%s/card", basePath), handlerAdapter(api.CreateCardHandler()))
+	mux.Handle(fmt.Sprintf("%s/version", basePath), handlerAdapter(api.VersionHandler()))
 }
 
 // VersionHandler returns the handler for API version.
@@ -126,13 +125,13 @@ func (api *API) VersionHandler() Handler {
 		})
 		return nil
 	})
-	return api.withAPIMiddleware(h)
+	return api.withMiddleware(h)
 }
 
 // CreateCardHandler returns the handler for registration of new cards.
 func (api *API) CreateCardHandler() Handler {
 	h := handler.NewCreateCard(createcard.New(api.saver, api.dispatcher))
-	return api.withAPIMiddleware(h)
+	return api.withMiddleware(h)
 }
 
 func handlerAdapter(h Handler) http.Handler {
