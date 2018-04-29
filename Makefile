@@ -12,7 +12,7 @@ clean:
 	-BINARY=$(BINARY) PACKAGE=$(PACKAGE) docker rmi -f $(shell PACKAGE=$(PACKAGE) docker-compose -p prepaidcard -f docker-compose.yml -f docker-compose.override.yml images -q 2>/dev/null)
 
 dev:
-	BINARY=$(BINARY) PACKAGE=$(PACKAGE) VERSION="$(VERSION)" docker-compose -p prepaidcard -f docker-compose.yml -f docker-compose.override.yml up --build --remove-orphans -d api
+	BINARY=$(BINARY) PACKAGE=$(PACKAGE) VERSION="$(VERSION)" docker-compose -p prepaidcard -f docker-compose.yml -f docker-compose.override.yml up --build -d --remove-orphans api
 
 up:
 	BINARY=$(BINARY) PACKAGE=$(PACKAGE) VERSION="$(VERSION)" docker-compose -p prepaidcard -f docker-compose.yml up --build --remove-orphans -d api
@@ -44,7 +44,7 @@ tail-logs:
 
 # helper targets for the container
 install:
-	go install -v $(PACKAGE)/cmd/$(BINARY)
+	CGO_ENABLED=0 GOOS=linux go install -a -v $(PACKAGE)/cmd/$(BINARY)
 
 test:
 	go test -v $(PACKAGE)/...
