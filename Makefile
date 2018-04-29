@@ -54,10 +54,10 @@ tail-logs:
 
 # helper targets for the container
 install:
-	CGO_ENABLED=0 GOOS=linux go install -a -v $(PACKAGE)/cmd/$(BINARY)
+	CGO_ENABLED=0 go install -a -ldflags '-s -w' -v $(PACKAGE)/cmd/$(BINARY)
 
 test:
-	go test -v $(PACKAGE)/...
+	CGO_ENABLED=0 go test -a -ldflags '-s -w' -v $(PACKAGE)/...
 
 test-all:
-	go test -tags=integration -v $(PACKAGE)/...
+	CGO_ENABLED=0 go test -a -ldflags '-s -w' -tags=integration -v $(PACKAGE)/...
