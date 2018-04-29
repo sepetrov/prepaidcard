@@ -1,4 +1,4 @@
- .PHONY: clean config config-dev dev doc exec-dev install logs ps start stop tail-logs test test-all up
+.PHONY: clean config config-dev dev doc exec-dev install logs ps start stop tail-logs test test-all up
 .DEFAULT_GOAL:=up
 
 # variables
