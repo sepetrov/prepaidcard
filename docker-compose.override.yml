@@ -3,8 +3,6 @@ services:
   api:
     build: 
       target: builder
-      args:
-        IMAGE: golang:1.10-alpine3.7
     entrypoint: ["sleep", "86400"]
     volumes:
       - ./:/go/src/${PACKAGE}/

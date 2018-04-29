@@ -1,11 +1,10 @@
 ARG BINARY
-ARG BUILDER_IMAGE=golang:1.10-alpine3.7
-ARG IMAGE=scratch
+ARG GOVERSION
 ARG VERSION
 
 
 
-FROM $BUILDER_IMAGE AS builder
+FROM golang:${GOVERSION}-alpine AS builder
 
 ARG BINARY
 ARG PACKAGE
@@ -42,7 +41,7 @@ RUN set -ex ; \
 
 
 
-FROM $IMAGE
+FROM scratch
 
 ARG BINARY
 
