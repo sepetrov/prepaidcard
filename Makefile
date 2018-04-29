@@ -18,6 +18,7 @@ clean:
 
 dev:
 	BINARY=$(BINARY) GOVERSION=$(GOVERSION) PACKAGE=$(PACKAGE) VERSION=$(VERSION) docker-compose -p prepaidcard -f docker-compose.yml -f docker-compose.override.yml up --build -d --remove-orphans api
+	docker-compose -p prepaidcard -f docker-compose.yml -f docker-compose.override.yml exec api sh -c "make install && $(BINARY)"
 
 up:
 	BINARY=$(BINARY) GOVERSION=$(GOVERSION) PACKAGE=$(PACKAGE) VERSION=$(VERSION) docker-compose -p prepaidcard -f docker-compose.yml up --build --remove-orphans -d api
