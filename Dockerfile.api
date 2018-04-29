@@ -37,7 +37,7 @@ RUN set -ex ; \
     sed -ie "s/\"unknown\"/\"${VERSION}\"/" pkg/api/version.go ; \
     dep ensure ; \
     tree ; \
-    CGO_ENABLED=0 GOOS=linux go install -a -v ${PACKAGE}/cmd/${BINARY}
+    CGO_ENABLED=0 go install -a -ldflags '-s -w' -v ${PACKAGE}/cmd/${BINARY}
 
 
 
