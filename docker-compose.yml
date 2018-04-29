@@ -5,9 +5,10 @@ services:
       context:    .
       dockerfile: Dockerfile.api
       args:
-        BINARY:  ${BINARY}
-        PACKAGE: ${PACKAGE}
-        VERSION: ${VERSION}
+        BINARY:    ${BINARY}
+        GOVERSION: ${GOVERSION}
+        PACKAGE:   ${PACKAGE}
+        VERSION:   ${VERSION}
     ports:
       - ${API_PORT}:8080
   doc:
