@@ -1,15 +1,27 @@
 ARG BINARY
-ARG IMAGE=golang:1.10-alpine3.7
+ARG BUILDER_IMAGE=golang:1.10-alpine3.7
+ARG IMAGE=scratch
 ARG VERSION
 
 
-FROM $IMAGE as builder
+
+FROM $BUILDER_IMAGE AS builder
 
 ARG BINARY
 ARG PACKAGE
 ARG VERSION
 
 WORKDIR /go/src/$PACKAGE
+
+RUN set -ex ; \
+    apk update ; \
+    apk add \
+        ca-certificates \
+        curl \
+        git \
+        make \
+        tree \
+    ;
 
 ADD https://raw.githubusercontent.com/golang/dep/master/install.sh /install-dep.sh
 RUN set -ex ; \
@@ -23,18 +35,19 @@ COPY Gopkg.lock Gopkg.lock
 COPY Gopkg.toml Gopkg.toml
 
 RUN set -ex ; \
-    apk update ; \
-    apk add git tree; \
     sed -ie "s/\"unknown\"/\"${VERSION}\"/" pkg/api/version.go ; \
     dep ensure ; \
     tree ; \
-    go install -v ${PACKAGE}/cmd/${BINARY}
+    CGO_ENABLED=0 GOOS=linux go install -a -v ${PACKAGE}/cmd/${BINARY}
+
 
 
 FROM $IMAGE
 
 ARG BINARY
 
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /go/bin/${BINARY} /usr/local/bin/docker-entrypoint
 
+EXPOSE 8080
 ENTRYPOINT ["docker-entrypoint"]
