@@ -9,8 +9,23 @@ services:
         GOVERSION: ${GOVERSION}
         PACKAGE:   ${PACKAGE}
         VERSION:   ${VERSION}
+    depends_on: 
+      - db
+    links: 
+      - db
     ports:
       - ${API_PORT}:8080
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_DATABASE:      ${BINARY}
+      MYSQL_PASSWORD:      ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_USER:          ${BINARY}
+    ports:
+      - ${DB_PORT}:3306
+    volumes: 
+      - ./infrastructure/db/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:ro
   doc:
     build:
       context:    .
