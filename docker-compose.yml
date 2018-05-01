@@ -16,7 +16,9 @@ services:
     ports:
       - ${API_PORT}:8080
   db:
-    image: mysql:8
+    build:
+      context:    .
+      dockerfile: Dockerfile.db
     environment:
       MYSQL_DATABASE:      ${BINARY}
       MYSQL_PASSWORD:      ${DB_PASSWORD}
@@ -24,8 +26,6 @@ services:
       MYSQL_USER:          ${BINARY}
     ports:
       - ${DB_PORT}:3306
-    volumes: 
-      - ./infrastructure/db/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:ro
   doc:
     build:
       context:    .

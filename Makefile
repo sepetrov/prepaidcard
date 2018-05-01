@@ -34,6 +34,9 @@ doc:
 	docker-compose -p prepaidcard -f docker-compose.yml up -d doc
 	-[ -z "$(DOC_PORT)" ] || open http://localhost:$(DOC_PORT) 2> /dev/null
 
+exec-db:
+	docker-compose -p prepaidcard -f docker-compose.yml -f docker-compose.override.yml exec db bash
+
 exec-dev:
 	docker-compose -p prepaidcard -f docker-compose.yml -f docker-compose.override.yml exec api sh
 
