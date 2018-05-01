@@ -3,16 +3,32 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/sepetrov/prepaidcard/pkg/api"
+	"github.com/sepetrov/prepaidcard/pkg/service/repository"
 )
 
-var port = flag.String("port", "8080", "Port number")
+var (
+	port = flag.String("port", os.Getenv("API_PORT"), "The port number")
+	dsn  = flag.String(
+		"dsn", fmt.Sprintf(
+			"%s:%s@tcp(%s:%s)/%s",
+			os.Getenv("DB_USER"),
+			os.Getenv("DB_PASSWORD"),
+			os.Getenv("DB_HOST"),
+			os.Getenv("DB_PORT"),
+			os.Getenv("DB_NAME"),
+		),
+		"The database DSN",
+	)
+)
 
 // setCorsHeaders adds CORS headers to response writer w.
 func setCorsHeaders(w http.ResponseWriter) {
@@ -31,6 +47,12 @@ func main() {
 		w.WriteHeader(http.StatusNotFound)
 	})
 
+	db, err := sql.Open("mysql", *dsn)
+	if err != nil {
+		logger.Fatal(err)
+	}
+	defer db.Close()
+
 	api, err := api.New(
 		api.LoggerOption(logger),
 		api.MiddlewareOption(func(h api.Handler) api.Handler {
@@ -40,6 +62,7 @@ func main() {
 				return h.Handle(ctx, w, r)
 			})
 		}),
+		api.RepositoryOption(repository.New(db)),
 	)
 	if err != nil {
 		logger.Fatalf("cannot create an API instance: %v", err)

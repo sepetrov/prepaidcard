@@ -9,8 +9,30 @@ services:
         GOVERSION: ${GOVERSION}
         PACKAGE:   ${PACKAGE}
         VERSION:   ${VERSION}
+    environment: 
+      API_PORT:    8080
+      DB_HOST:     db
+      DB_NAME:     ${BINARY}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PORT:     3306
+      DB_USER:     ${BINARY}
+    depends_on: 
+      - db
+    links: 
+      - db
     ports:
       - ${API_PORT}:8080
+  db:
+    build:
+      context:    .
+      dockerfile: Dockerfile.db
+    environment:
+      MYSQL_DATABASE:      ${BINARY}
+      MYSQL_PASSWORD:      ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_USER:          ${BINARY}
+    ports:
+      - ${DB_PORT}:3306
   doc:
     build:
       context:    .

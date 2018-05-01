@@ -14,7 +14,12 @@ import (
 
 func TestVersionHandler(t *testing.T) {
 	t.Run("default version is unknown", func(t *testing.T) {
-		a, _ := api.New()
+		a, err := api.New(
+			api.RepositoryOption(&assert.Repository{}),
+		)
+		if err != nil {
+			t.Fatalf("cannot create new API: %v", err)
+		}
 		h := a.VersionHandler()
 		w := httptest.NewRecorder()
 		r, err := http.NewRequest("GET", "", nil)
@@ -26,7 +31,13 @@ func TestVersionHandler(t *testing.T) {
 	})
 	t.Run("returns the API version", func(t *testing.T) {
 		v := "FooBar v123.456-beta"
-		a, _ := api.New(api.VersionOption(v))
+		a, err := api.New(
+			api.VersionOption(v),
+			api.RepositoryOption(&assert.Repository{}),
+		)
+		if err != nil {
+			t.Fatalf("cannot create new API: %v", err)
+		}
 		h := a.VersionHandler()
 		w := httptest.NewRecorder()
 		r, err := http.NewRequest("GET", "", nil)
@@ -46,7 +57,10 @@ func TestMiddlewareOption(t *testing.T) {
 			return h.Handle(ctx, w, r)
 		})
 	}
-	a, err := api.New(api.MiddlewareOption(m))
+	a, err := api.New(
+		api.MiddlewareOption(m),
+		api.RepositoryOption(&assert.Repository{}),
+	)
 	if err != nil {
 		t.Fatalf("cannot create API: %v", err)
 	}

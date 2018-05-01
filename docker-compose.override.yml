@@ -6,3 +6,22 @@ services:
     entrypoint: ["sleep", "86400"]
     volumes:
       - ./:/go/src/${PACKAGE}/
+    environment: 
+      TEST_DB_HOST:     testdb
+      TEST_DB_NAME:     ${BINARY}_test
+      TEST_DB_PASSWORD: ${DB_PASSWORD}
+      TEST_DB_PORT:     3306
+      TEST_DB_USER:     ${BINARY}_test
+    depends_on: 
+      - testdb
+    links:
+      - testdb
+  testdb:
+    build:
+      context:    .
+      dockerfile: Dockerfile.db
+    environment:
+      MYSQL_DATABASE:      ${BINARY}_test
+      MYSQL_PASSWORD:      ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_USER:          ${BINARY}_test
