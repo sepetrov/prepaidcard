@@ -4,6 +4,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -20,10 +21,10 @@ const basePath = "/api"
 
 // API is the prepaid card application.
 type API struct {
-	saver      createcard.Saver
 	dispatcher createcard.Dispatcher
 	logger     *log.Logger
 	middleware Middleware
+	repository Repository
 	version    string
 }
 
@@ -47,6 +48,11 @@ type Middleware func(Handler) Handler
 
 var noopMiddleware Middleware = func(h Handler) Handler {
 	return h
+}
+
+// Repository is an interface that satisfies the individual services' (handlers') repositories.
+type Repository interface {
+	createcard.Saver
 }
 
 // Option configures an API instance.
@@ -76,10 +82,17 @@ func MiddlewareOption(middleware Middleware) Option {
 	}
 }
 
+// RepositoryOption returns new option for setting a repository.
+func RepositoryOption(repository Repository) Option {
+	return func(api *API) (*API, error) {
+		api.repository = repository
+		return api, nil
+	}
+}
+
 // New returns new API configured with options.
 func New(options ...Option) (*API, error) {
 	api := &API{
-		saver:      &saver{},
 		dispatcher: &dispatcher{},
 		middleware: noopMiddleware,
 		version:    Version,
@@ -94,6 +107,10 @@ func New(options ...Option) (*API, error) {
 	if api.logger == nil {
 		api.logger = log.New(ioutil.Discard, "", 0)
 	}
+	if api.repository == nil {
+		return &API{}, errors.New("missing repository option")
+	}
+
 	return api, nil
 }
 
@@ -130,7 +147,7 @@ func (api *API) VersionHandler() Handler {
 
 // CreateCardHandler returns the handler for registration of new cards.
 func (api *API) CreateCardHandler() Handler {
-	h := handler.NewCreateCard(createcard.New(api.saver, api.dispatcher))
+	h := handler.NewCreateCard(createcard.New(api.repository.(createcard.Saver), api.dispatcher))
 	return api.withMiddleware(h)
 }
 

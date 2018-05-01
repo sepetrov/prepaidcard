@@ -9,6 +9,13 @@ services:
         GOVERSION: ${GOVERSION}
         PACKAGE:   ${PACKAGE}
         VERSION:   ${VERSION}
+    environment: 
+      API_PORT:    8080
+      DB_HOST:     db
+      DB_NAME:     ${BINARY}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PORT:     3306
+      DB_USER:     ${BINARY}
     depends_on: 
       - db
     links: 
