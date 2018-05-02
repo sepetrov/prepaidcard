@@ -1,2 +1,11 @@
-/.git
+/.env*
+/.git*
+/.travis.yml
+/Dockerfile.*
+/LICENSE
+/Makefile
+/README.md
+/docker-compose.override.yml
+/docker-compose.yml
 /log/
+/vendor/
