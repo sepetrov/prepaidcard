@@ -1,4 +1,4 @@
- .PHONY: clean config config-dev dev doc exec install logs ps query-db query-testdb start stop tail-logs test test-all up
+.PHONY: clean config config-dev dev doc exec install logs ps query-db query-testdb start stop tail-logs test test-all up
 .DEFAULT_GOAL:=up
 
 # variables
