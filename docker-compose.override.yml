@@ -25,3 +25,6 @@ services:
       MYSQL_PASSWORD:      ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_USER:          ${BINARY}_test
+    volumes: 
+      - ./infrastructure/testdb/etc/mysql/conf.d/z02-docker.cnf:/etc/mysql/conf.d/z02-docker.cnf:ro
+      - ./log/testdb/:/var/log/mysql/:delegated
