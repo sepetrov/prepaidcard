@@ -8,7 +8,7 @@ VERSION=unknown
 PACKAGE:=github.com/sepetrov/prepaidcard
 
 # target-specific variables
-config up: VERSION:=$(shell git -C . describe --abbrev=0 --tags 2> /dev/null || git -C . rev-parse --short HEAD)
+config doc up: VERSION:=$(shell git -C . describe --abbrev=0 --tags 2> /dev/null || git -C . rev-parse --short HEAD)
 doc: DOC_PORT:=$(shell grep DOC_PORT .env 2> /dev/null | sed -e 's/DOC_PORT\s*=\s*\(.*\)/\1/g')
 query-db query-testdb: DB_ROOT_PASSWORD:=$(shell grep DB_ROOT_PASSWORD .env 2> /dev/null | sed -e 's/DB_ROOT_PASSWORD\s*=\s*\(.*\)/\1/g')
 
@@ -32,7 +32,7 @@ config-dev:
 	@BINARY=$(BINARY) GOVERSION=$(GOVERSION) PACKAGE=$(PACKAGE) VERSION=$(VERSION) docker-compose -p prepaidcard -f docker-compose.yml config
 
 doc:
-	docker-compose -p prepaidcard -f docker-compose.yml up -d doc
+	VERSION=$(VERSION) docker-compose -p prepaidcard -f docker-compose.yml up -d doc
 	-[ -z "$(DOC_PORT)" ] || open http://localhost:$(DOC_PORT) 2> /dev/null
 
 exec:

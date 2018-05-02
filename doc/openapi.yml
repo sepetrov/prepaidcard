@@ -11,7 +11,7 @@ info:
     - **bank**: this is the entity controlling the service and only authorised personell must have access to these endpoints;
     - **user**: this is the cardholder;
     - **merchant**: this is a merchant, which accepts card payments via the service.
-  version: 1.0.0
+  version: unknown
 servers:
   -
     url: "{protocol}://{host}:{port}/api"

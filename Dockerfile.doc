@@ -1,6 +1,7 @@
 FROM nginx:1.13
 
 ARG SWAGGER_UI_VERSION=3.14.0
+ARG VERSION
 
 WORKDIR /var/www
 
@@ -9,6 +10,7 @@ COPY infrastructure/doc/etc/nginx/default.conf /etc/nginx/conf.d/
 
 # Copy OpenAPI specification
 COPY doc/openapi.yml doc/openapi.yml
+RUN sed -ie "s/^  version: unknown$/  version: ${VERSION}/" doc/openapi.yml
 
 # Install dependencies
 RUN set -ex ; \
