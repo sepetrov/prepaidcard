@@ -137,6 +137,13 @@ func (s AuthorizationRequestSnapshot) CreatedAt() time.Time {
 	return s.createdAt
 }
 
+// CardData is an interface providing card data.
+type CardData interface {
+	UUID() uuid.UUID
+	AvailableBalance() uint64
+	BlockedBalance() uint64
+}
+
 // Card represents a prepaid card.
 type Card struct {
 	uuid             uuid.UUID
@@ -147,6 +154,15 @@ type Card struct {
 // NewCard returns new Card.
 func NewCard() *Card {
 	return &Card{uuid: uuid.NewV4()}
+}
+
+// CardFromData reconstructs card from data.
+func CardFromData(data CardData) *Card {
+	return &Card{
+		uuid:             data.UUID(),
+		availableBalance: data.AvailableBalance(),
+		blockedBalance:   data.BlockedBalance(),
+	}
 }
 
 // UUID returns the UUID.
