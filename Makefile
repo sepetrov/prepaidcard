@@ -106,7 +106,7 @@ up:           ## Build and start Docker containers in prodution mode
 ##
 
 install:          ## Install application binary
-	CGO_ENABLED=0 go install -a -ldflags "-s -w -X '$(PACKAGE)/pkg/api/api.Version=$(VERSION)'" -v $(PACKAGE)/cmd/$(BINARY)
+	CGO_ENABLED=0 go install -a -ldflags "-s -w -X '$(PACKAGE)/pkg/api/api.Version=$(VERSION)'" -v $(PACKAGE)
 
 test:             ## Run tests
 	CGO_ENABLED=0 go test -a -ldflags '-s -w' -v $(PACKAGE)/...
