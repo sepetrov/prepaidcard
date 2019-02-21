@@ -8,12 +8,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/satori/go.uuid"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/gofrs/uuid"
 
 	"github.com/sepetrov/prepaidcard/pkg/internal/model"
 	"github.com/sepetrov/prepaidcard/pkg/service/repository"
-
-	_ "github.com/go-sql-driver/mysql"
 )
 
 const sqlInsertCard = "INSERT INTO card (uuid, available_balance, blocked_balance) VALUES (?, ?, ?)"
@@ -33,7 +32,10 @@ func TestSaveCard(t *testing.T) {
 	db := db(t)
 	defer db.Close()
 
-	card := model.NewCard()
+	card, err := model.NewCard()
+	if err != nil {
+		t.Fatalf("cannot create new card: %v", err)
+	}
 	repo := repository.New(db)
 	if err := repo.SaveCard(card); err != nil {
 		t.Fatal(err)
@@ -68,7 +70,10 @@ func TestGetCard(t *testing.T) {
 	db := db(t)
 	defer db.Close()
 	t.Run("returns ErrNotFound", func(t *testing.T) {
-		card := model.NewCard()
+		card, err := model.NewCard()
+		if err != nil {
+			t.Fatalf("cannot create new card: %v", err)
+		}
 		repo := repository.New(db)
 		stmt, err := db.Prepare(sqlInsertCard)
 		if err != nil {
@@ -84,7 +89,7 @@ func TestGetCard(t *testing.T) {
 			}
 		}()
 
-		card, err = repo.GetCard(uuid.NewV4())
+		card, err = repo.GetCard(uuid.Must(uuid.NewV4()))
 		if err != repository.ErrNotFound {
 			t.Fatalf("got error %v, want ErrNotFound", err)
 		}
@@ -98,7 +103,10 @@ func TestGetCard(t *testing.T) {
 		defer stmt.Close()
 
 		// insert first card
-		card := model.NewCard()
+		card, err := model.NewCard()
+		if err != nil {
+			t.Fatalf("cannot create new card: %v", err)
+		}
 		if _, err := stmt.Exec(card.UUID(), card.AvailableBalance(), card.BlockedBalance()); err != nil {
 			t.Fatal(err)
 		}
@@ -109,7 +117,10 @@ func TestGetCard(t *testing.T) {
 		}()
 
 		// insert second card
-		card = model.NewCard()
+		card, err = model.NewCard()
+		if err != nil {
+			t.Fatalf("cannot create new card: %v", err)
+		}
 		if _, err := stmt.Exec(card.UUID(), card.AvailableBalance(), card.BlockedBalance()); err != nil {
 			t.Fatal(err)
 		}

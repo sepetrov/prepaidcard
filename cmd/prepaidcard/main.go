@@ -11,6 +11,7 @@ import (
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
+
 	"github.com/sepetrov/prepaidcard/pkg/api"
 	"github.com/sepetrov/prepaidcard/pkg/service/repository"
 )

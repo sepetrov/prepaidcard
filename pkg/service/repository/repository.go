@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/satori/go.uuid"
+	"github.com/gofrs/uuid"
 
 	"github.com/sepetrov/prepaidcard/pkg/internal/model"
 	"github.com/sepetrov/prepaidcard/pkg/internal/service/createcard"

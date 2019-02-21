@@ -7,7 +7,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/satori/go.uuid"
+	"github.com/gofrs/uuid"
 )
 
 // AuthorizationRequest represents the requests sent by a merchant to charge a customer.
@@ -27,17 +27,26 @@ func NewAuthorizationRequest(card *Card, merchant uuid.UUID, amount uint64) (*Au
 	if err := card.blockMoney(amount); err != nil {
 		return &AuthorizationRequest{}, fmt.Errorf("cannot block the requested amount; %v", err)
 	}
-	snapshot := AuthorizationRequestSnapshot{
-		uuid:          uuid.NewV4(),
-		blockedAmount: amount,
-		createdAt:     time.Now(),
+	id1, err := uuid.NewV4()
+	if err != nil {
+		return &AuthorizationRequest{}, fmt.Errorf("cannot generate identifier; %v", err)
+	}
+	id2, err := uuid.NewV4()
+	if err != nil {
+		return &AuthorizationRequest{}, fmt.Errorf("cannot generate identifier; %v", err)
 	}
 	req := &AuthorizationRequest{
-		uuid:          uuid.NewV4(),
+		uuid:          id1,
 		cardUUID:      card.UUID(),
 		merchantUUID:  merchant,
 		blockedAmount: amount,
-		history:       []AuthorizationRequestSnapshot{snapshot},
+		history: []AuthorizationRequestSnapshot{
+			{
+				uuid:          id2,
+				blockedAmount: amount,
+				createdAt:     time.Now(),
+			},
+		},
 	}
 	return req, nil
 }
@@ -56,11 +65,15 @@ func (req *AuthorizationRequest) Reverse(card *Card, amount uint64) error {
 	if err := card.releaseMoney(amount); err != nil {
 		return fmt.Errorf("cannot reverse authorization request; %v", err)
 	}
+	id, err := uuid.NewV4()
+	if err != nil {
+		return fmt.Errorf("cannot generate identifier; %v", err)
+	}
 	req.blockedAmount -= amount
 	req.history = append(
 		req.history,
 		AuthorizationRequestSnapshot{
-			uuid:          uuid.NewV4(),
+			uuid:          id,
 			blockedAmount: req.blockedAmount,
 			createdAt:     time.Now(),
 		},
@@ -152,8 +165,12 @@ type Card struct {
 }
 
 // NewCard returns new Card.
-func NewCard() *Card {
-	return &Card{uuid: uuid.NewV4()}
+func NewCard() (*Card, error) {
+	id, err := uuid.NewV4()
+	if err != nil {
+		return nil, fmt.Errorf("cannot generate identifier; %v", err)
+	}
+	return &Card{uuid: id}, nil
 }
 
 // CardFromData reconstructs card from data.

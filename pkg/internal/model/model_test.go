@@ -5,14 +5,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/satori/go.uuid"
+	"github.com/gofrs/uuid"
+
 	"github.com/sepetrov/prepaidcard/pkg/internal/model"
 	h "github.com/sepetrov/prepaidcard/pkg/internal/testing"
 )
 
 func TestCard_LoadMoney(t *testing.T) {
 	t.Run("amount must be greater than zero", func(t *testing.T) {
-		c := model.NewCard()
+		c, err := model.NewCard()
+		h.MustNotErr(t, err, "%v")
 		h.MustErr(t, c.LoadMoney(0), "c.LoadBalance(0) nil; want error")
 	})
 	t.Run("available balance cannot become greater than math.MaxUint64", func(t *testing.T) {
@@ -27,13 +29,16 @@ func TestCard_LoadMoney(t *testing.T) {
 
 func TestNewAuthorizationRequest(t *testing.T) {
 	t.Run("cannot block 0", func(t *testing.T) {
-		_, err := model.NewAuthorizationRequest(model.NewCard(), uuid.NewV4(), 0)
+		c, err := model.NewCard()
+		h.MustNotErr(t, err, "%v")
+		_, err = model.NewAuthorizationRequest(c, uuid.Must(uuid.NewV4()), 0)
 		h.MustErr(t, err, "NewAuthorizationRequest() = AuthorizationRequest{}, nil; want AuthorizationRequest{}, error")
 	})
 	t.Run("success", func(t *testing.T) {
-		c := model.NewCard()
+		c, err := model.NewCard()
+		h.MustNotErr(t, err, "%v")
 		c.LoadMoney(100)
-		m := uuid.NewV4()
+		m := uuid.Must(uuid.NewV4())
 		b := time.Now()
 		req, err := model.NewAuthorizationRequest(c, m, 70)
 		h.MustNotErr(t, err, "NewAuthorizationRequest() = %+v, %v; want nil", req)
@@ -148,7 +153,8 @@ func assertCardBalance(t *testing.T, c *model.Card, a, b uint64) {
 
 func mustCard(t *testing.T, l, b uint64) *model.Card {
 	t.Helper()
-	c := model.NewCard()
+	c, err := model.NewCard()
+	h.MustNotErr(t, err, "%v")
 	if l > 0 {
 		h.MustNotErr(t, c.LoadMoney(l), "Card.LoadMoney(%v) %v; want nil; mustCard", l)
 	}
@@ -160,8 +166,8 @@ func mustCard(t *testing.T, l, b uint64) *model.Card {
 
 func mustAuthorizationRequest(t *testing.T, c *model.Card, b uint64) *model.AuthorizationRequest {
 	t.Helper()
-	req, err := model.NewAuthorizationRequest(c, uuid.NewV4(), b)
-	h.MustNotErr(t, err, "NewAuthorizationRequest(c, uuid.NewV4(), %v) %v; want nil; mustAuthorizationRequest", b)
+	req, err := model.NewAuthorizationRequest(c, uuid.Must(uuid.NewV4()), b)
+	h.MustNotErr(t, err, "NewAuthorizationRequest(c, uuid.Must(uuid.NewV4()), %v) %v; want nil; mustAuthorizationRequest", b)
 	return req
 }
 
