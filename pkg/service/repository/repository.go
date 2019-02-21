@@ -1,5 +1,4 @@
-// Package repository has the repository service, which provides interface with
-// persistance layer of the API.
+// Package repository contains the service for data persistence.
 package repository
 
 import (
@@ -14,15 +13,13 @@ import (
 	"github.com/sepetrov/prepaidcard/pkg/internal/service/createcard"
 )
 
-const cardCollection = "card"
-
 const sqlInsertCard = "INSERT INTO card (uuid, available_balance, blocked_balance) VALUES (?, ?, ?)"
 const sqlSelectCard = "SELECT uuid, available_balance, blocked_balance FROM card WHERE uuid = ? LIMIT 1"
 
-// ErrNotFound is returned when the excepcted record(s) can not be found.
+// ErrNotFound is returned when the expected record(s) can not be found.
 var ErrNotFound = errors.New("record not found")
 
-// Repository is a service, which provides interface with persistance layer.
+// Repository is a service, which provides interface with persistence layer.
 type Repository struct {
 	db *sql.DB
 }
@@ -59,7 +56,7 @@ func (c card) BlockedBalance() uint64 {
 	return c.blockedBalance
 }
 
-// SaveCard persits new card.
+// SaveCard persists new card.
 func (r *Repository) SaveCard(card *model.Card) error {
 	stmt, err := r.db.Prepare(sqlInsertCard)
 	if err != nil {
