@@ -21,16 +21,36 @@
 
 .DEFAULT_GOAL:=help
 
-# variables
+#
+# Variables
+#
+
+# The name of the binary.
 BINARY:=prepaidcard
+
+# The Go version.
 GOVERSION:=1.10
-VERSION=unknown
+
+# The name of the package.
 PACKAGE:=github.com/sepetrov/prepaidcard
 
-# target-specific variables
-config doc up: VERSION:=$(shell git -C . describe --abbrev=0 --tags 2> /dev/null || git -C . rev-parse --short HEAD)
-doc: DOC_PORT:=$(shell grep DOC_PORT .env 2> /dev/null | sed -e 's/DOC_PORT\s*=\s*\(.*\)/\1/g')
-query-db query-testdb: DB_ROOT_PASSWORD:=$(shell grep DB_ROOT_PASSWORD .env 2> /dev/null | sed -e 's/DB_ROOT_PASSWORD\s*=\s*\(.*\)/\1/g')
+# The application version.
+#
+# The value is automatically generated using Git. You should never override it manually.
+#
+# Falls back gracefully to one of the values:
+# - [tag] if HEAD is tagged
+# - [tag]-[number of commits after the last tag]-g[short git commit hash] if HEAD has an offset from a tag
+# - [git commit hash]
+# - "unknown"
+VERSION:=$(shell \
+	git -C . describe --tags 2> /dev/null || \
+	git -C . rev-parse --short HEAD 2> /dev/null || \
+	echo "unknown" \
+)
+
+# Override the variables with the environment variables from .env if it exists.
+-include .env
 
 ##
 ##  * Host targets
@@ -86,7 +106,7 @@ up:           ## Build and start Docker containers in prodution mode
 ##
 
 install:          ## Install application binary
-	CGO_ENABLED=0 go install -a -ldflags '-s -w' -v $(PACKAGE)/cmd/$(BINARY)
+	CGO_ENABLED=0 go install -a -ldflags "-s -w -X '$(PACKAGE)/pkg/api/api.Version=$(VERSION)'" -v $(PACKAGE)/cmd/$(BINARY)
 
 test:             ## Run tests
 	CGO_ENABLED=0 go test -a -ldflags '-s -w' -v $(PACKAGE)/...
