@@ -1,4 +1,23 @@
-.PHONY: clean config config-dev dev doc exec install logs ps query-db query-testdb start stop tail-logs test test-all up
+.PHONY: \
+	clean \
+	config \
+	config-dev \
+	dev \
+	doc \
+	exec \
+	install \
+	logs \
+	ps \
+	query-db \
+	query-testdb \
+	start \
+	stop \
+	tail-logs \
+	test \
+	test-integration \
+	test-unit \
+	up \
+
 .DEFAULT_GOAL:=up
 
 # variables
@@ -66,5 +85,8 @@ install:
 test:
 	CGO_ENABLED=0 go test -a -ldflags '-s -w' -v $(PACKAGE)/...
 
-test-all:
+test-integration:
 	go test -tags=integration -v $(PACKAGE)/...
+
+test-unit:
+	go test -tags=unit -v $(PACKAGE)/...
