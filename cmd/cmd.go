@@ -2,7 +2,6 @@
 package cmd
 
 import (
-	"context"
 	"database/sql"
 	"flag"
 	"fmt"
@@ -58,10 +57,10 @@ func Main() {
 	api, err := api.New(
 		api.LoggerOption(logger),
 		api.MiddlewareOption(func(h api.Handler) api.Handler {
-			return api.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+			return api.HandlerFunc(func(w http.ResponseWriter, r *http.Request) error {
 				logger.Printf("%s %s", r.Method, r.URL)
 				setCorsHeaders(w)
-				return h.Handle(ctx, w, r)
+				return h.Handle(w, r)
 			})
 		}),
 		api.RepositoryOption(repository.New(db)),

@@ -4,7 +4,6 @@ package middleware_test
 
 import (
 	"bytes"
-	"context"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -24,7 +23,7 @@ func TestError(t *testing.T) {
 		m := middleware.Error()
 
 		var h handler.Handler
-		h = handler.Func(func(_ context.Context, w http.ResponseWriter, _ *http.Request) error {
+		h = handler.Func(func(w http.ResponseWriter, _ *http.Request) error {
 			return errors.New("foo")
 		})
 		h = m(h)
@@ -33,7 +32,7 @@ func TestError(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		th := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			h.Handle(context.TODO(), w, r)
+			h.Handle(w, r)
 		})
 		th(w, req)
 
@@ -50,7 +49,7 @@ func TestError(t *testing.T) {
 		m := middleware.Error()
 
 		var h handler.Handler
-		h = handler.Func(func(_ context.Context, w http.ResponseWriter, _ *http.Request) error {
+		h = handler.Func(func(w http.ResponseWriter, _ *http.Request) error {
 			w.Write([]byte("test"))
 			return nil
 		})
@@ -60,7 +59,7 @@ func TestError(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		th := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			h.Handle(context.TODO(), w, r)
+			h.Handle(w, r)
 		})
 		th(w, req)
 
@@ -79,8 +78,8 @@ func TestErrorLog(t *testing.T) {
 	t.Run("logs errors", func(t *testing.T) {
 		defer b.Reset()
 		e := errors.New("foo")
-		h := m(handler.Func(func(_ context.Context, _ http.ResponseWriter, _ *http.Request) error { return e }))
-		err := h.Handle(context.TODO(), httptest.NewRecorder(), httptest.NewRequest("GET", "http://example.com", nil))
+		h := m(handler.Func(func(http.ResponseWriter, *http.Request) error { return e }))
+		err := h.Handle(httptest.NewRecorder(), httptest.NewRequest("GET", "http://example.com", nil))
 		if want := fmt.Sprintf("%s\n", e); b.String() != want {
 			t.Errorf("want logged error %q, got %q", want, b.String())
 		}
@@ -90,8 +89,8 @@ func TestErrorLog(t *testing.T) {
 	})
 	t.Run("ignores sucessfully handled requests", func(t *testing.T) {
 		defer b.Reset()
-		h := m(handler.Func(func(_ context.Context, _ http.ResponseWriter, _ *http.Request) error { return nil }))
-		err := h.Handle(context.TODO(), httptest.NewRecorder(), httptest.NewRequest("GET", "http://example.com", nil))
+		h := m(handler.Func(func(http.ResponseWriter, *http.Request) error { return nil }))
+		err := h.Handle(httptest.NewRecorder(), httptest.NewRequest("GET", "http://example.com", nil))
 		if b.String() != "" {
 			t.Errorf("want no logs, got %q", b.String())
 		}
