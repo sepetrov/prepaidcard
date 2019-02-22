@@ -29,7 +29,7 @@
 BINARY:=prepaidcard
 
 # The Go version.
-GOVERSION:=1.10
+GOVERSION:=1.11
 
 # The name of the package.
 PACKAGE:=github.com/sepetrov/prepaidcard
