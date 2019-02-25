@@ -5,7 +5,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/satori/go.uuid"
+	"github.com/gofrs/uuid"
+
 	"github.com/sepetrov/prepaidcard/pkg/internal/event"
 	"github.com/sepetrov/prepaidcard/pkg/internal/model"
 )
@@ -30,12 +31,19 @@ func New(s Saver, d Dispatcher) *Service {
 
 // CreateCard creates a new card.
 func (svc *Service) CreateCard() (Response, error) {
-	card := model.NewCard()
+	card, err := model.NewCard()
+	if err != nil {
+		return Response{}, fmt.Errorf("CreateCard() cannot create new card; %v", err)
+	}
 	if err := svc.saver.SaveCard(card); err != nil {
 		return Response{}, fmt.Errorf("CreateCard() cannot persist card; %v", err)
 	}
+	id, err := uuid.NewV4()
+	if err != nil {
+		return Response{}, fmt.Errorf("CreateCard() cannot generate identifier; %v", err)
+	}
 	svc.dispatcher.DispatchCardCreated(event.CardCreated{
-		UUID:     uuid.NewV4(),
+		UUID:     id,
 		Time:     time.Now(),
 		CardUUID: card.UUID(),
 	})

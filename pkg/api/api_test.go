@@ -1,7 +1,8 @@
+// +build !integration
+
 package api_test
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -26,7 +27,7 @@ func TestVersionHandler(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot create request: %v", err)
 		}
-		h.Handle(context.TODO(), w, r)
+		h.Handle(w, r)
 		assert.MustE(t, strings.TrimSpace(w.Body.String()), fmt.Sprintf(`{"version":%q}`, api.Version), "")
 	})
 	t.Run("returns the API version", func(t *testing.T) {
@@ -44,7 +45,7 @@ func TestVersionHandler(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot create request: %v", err)
 		}
-		h.Handle(context.TODO(), w, r)
+		h.Handle(w, r)
 		assert.MustE(t, strings.TrimSpace(w.Body.String()), fmt.Sprintf(`{"version":%q}`, v), "")
 	})
 }
@@ -52,9 +53,9 @@ func TestVersionHandler(t *testing.T) {
 func TestMiddlewareOption(t *testing.T) {
 	var isCalled bool
 	m := func(h api.Handler) api.Handler {
-		return api.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+		return api.HandlerFunc(func(w http.ResponseWriter, r *http.Request) error {
 			isCalled = true
-			return h.Handle(ctx, w, r)
+			return h.Handle(w, r)
 		})
 	}
 	a, err := api.New(
@@ -64,7 +65,7 @@ func TestMiddlewareOption(t *testing.T) {
 	if err != nil {
 		t.Fatalf("cannot create API: %v", err)
 	}
-	a.VersionHandler().Handle(context.TODO(), httptest.NewRecorder(), httptest.NewRequest("GET", "http://example.com", nil))
+	a.VersionHandler().Handle(httptest.NewRecorder(), httptest.NewRequest("GET", "http://example.com", nil))
 	if !isCalled {
 		t.Error("middeware not used")
 	}

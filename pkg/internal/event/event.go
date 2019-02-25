@@ -4,7 +4,7 @@ package event
 import (
 	"time"
 
-	"github.com/satori/go.uuid"
+	"github.com/gofrs/uuid"
 )
 
 // CardCreated represents the registration of a new card to the system.

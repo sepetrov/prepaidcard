@@ -1,7 +1,7 @@
 language: go
 
 go:
-  - "1.10"
+  - "1.11"
 
 before_install:
   - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
@@ -12,11 +12,12 @@ before_install:
 
 script:
   - >-
-      for N in $(go list ./...); do CGO_ENABLED=0 go test -a -covermode=count -coverprofile=${N//\//_}.out -ldflags '-s -w' -v $N 1>/dev/null; done;
+      for N in $(go list ./...); do CGO_ENABLED=0 go test -a -covermode=count -coverprofile=${N//\//_}.out -ldflags '-s -w' -tags=unit -v $N 1>/dev/null; done;
       echo 'mode:'' count' > coverage.out && cat *.out | grep -v 'mode:' | sort -r | awk '{if($1 != last) {print $0;last=$1}}' >> coverage.out;
       $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN;
   - test -z "$(go vet ./... | tee /dev/stderr)"
-  - test -z "$(gofmt -d -s . | tee /dev/stderr)"
+  - test -z "$(gofmt -d -s cmd | tee /dev/stderr)"
+  - test -z "$(gofmt -d -s pkg | tee /dev/stderr)"
   - golint -set_exit_status cmd/... pkg/...
 
 notifications:

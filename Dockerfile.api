@@ -3,7 +3,6 @@ ARG GOVERSION
 ARG VERSION
 
 
-
 FROM golang:${GOVERSION}-alpine AS builder
 
 ARG BINARY
@@ -29,16 +28,16 @@ RUN set -ex ; \
     rm /install-dep.sh
 
 COPY cmd cmd
-COPY pkg pkg
 COPY Gopkg.lock Gopkg.lock
 COPY Gopkg.toml Gopkg.toml
+COPY main.go main.go
+COPY Makefile Makefile
+COPY pkg pkg
 
 RUN set -ex ; \
-    sed -ie "s/\"unknown\"/\"${VERSION}\"/" pkg/api/version.go ; \
     dep ensure ; \
     tree ; \
-    CGO_ENABLED=0 go install -a -ldflags '-s -w' -v ${PACKAGE}/cmd/${BINARY}
-
+    make install
 
 
 FROM scratch
@@ -46,7 +45,7 @@ FROM scratch
 ARG BINARY
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /go/bin/${BINARY} /usr/local/bin/docker-entrypoint
+COPY --from=builder /go/bin/$BINARY /usr/local/bin/docker-entrypoint
 
 EXPOSE 8080
 ENTRYPOINT ["docker-entrypoint"]

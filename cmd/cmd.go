@@ -1,8 +1,7 @@
-// Command prepaidcard starts the API server on port 8080.
-package main
+// Package cmd provides the CLI.
+package cmd
 
 import (
-	"context"
 	"database/sql"
 	"flag"
 	"fmt"
@@ -10,7 +9,8 @@ import (
 	"net/http"
 	"os"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql" // load mysql driver
+
 	"github.com/sepetrov/prepaidcard/pkg/api"
 	"github.com/sepetrov/prepaidcard/pkg/service/repository"
 )
@@ -37,7 +37,8 @@ func setCorsHeaders(w http.ResponseWriter) {
 	w.Header().Set("Access-Control-Allow-Origin", "*") // TODO: be more strict
 }
 
-func main() {
+// Main is the entry point for the application.
+func Main() {
 	flag.Parse()
 	logger := log.New(os.Stderr, "", log.LstdFlags)
 
@@ -56,10 +57,10 @@ func main() {
 	api, err := api.New(
 		api.LoggerOption(logger),
 		api.MiddlewareOption(func(h api.Handler) api.Handler {
-			return api.HandlerFunc(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+			return api.HandlerFunc(func(w http.ResponseWriter, r *http.Request) error {
 				logger.Printf("%s %s", r.Method, r.URL)
 				setCorsHeaders(w)
-				return h.Handle(ctx, w, r)
+				return h.Handle(w, r)
 			})
 		}),
 		api.RepositoryOption(repository.New(db)),

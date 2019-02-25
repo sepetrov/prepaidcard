@@ -1,7 +1,7 @@
 package api
 
-// Version is the API version information.
+// Version is the API version.
 //
 // DO NOT EDIT MANUALLY!
-// This file is generated automatically during the build process.
-const Version = "unknown"
+// The value set during the build. See https://git.io/fhZAW.
+var Version string

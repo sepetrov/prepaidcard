@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -12,16 +11,16 @@ import (
 // Func is an adapter to allow regular functions with the signature of
 // Handle method of Handler interface to be wrapped and used as the Handler
 // interface. This is useful when writing middleware.
-type Func func(context.Context, http.ResponseWriter, *http.Request) error
+type Func func(http.ResponseWriter, *http.Request) error
 
 // Handle implements Handler.
-func (h Func) Handle(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	return h(ctx, w, r)
+func (h Func) Handle(w http.ResponseWriter, r *http.Request) error {
+	return h(w, r)
 }
 
 // Handler is an interface for handling HTTP request.
 type Handler interface {
-	Handle(context.Context, http.ResponseWriter, *http.Request) error
+	Handle(http.ResponseWriter, *http.Request) error
 }
 
 // CreateCard is handler for new cards.
@@ -37,7 +36,7 @@ func NewCreateCard(svc *createcard.Service) *CreateCard {
 }
 
 // Handle handles requests for new card.
-func (h *CreateCard) Handle(_ context.Context, w http.ResponseWriter, _ *http.Request) error {
+func (h *CreateCard) Handle(w http.ResponseWriter, _ *http.Request) error {
 	res, err := h.svc.CreateCard()
 	if err != nil {
 		return err

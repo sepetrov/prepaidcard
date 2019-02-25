@@ -2,7 +2,6 @@
 package api
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -31,16 +30,16 @@ type API struct {
 // HandlerFunc is an adapter to allow regular functions with the signature of
 // Handle method of Handler interface to be wrapped and used as the Handler
 // interface. This is useful when writing middleware.
-type HandlerFunc func(context.Context, http.ResponseWriter, *http.Request) error
+type HandlerFunc func(http.ResponseWriter, *http.Request) error
 
 // Handle implements Handler.
-func (h HandlerFunc) Handle(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	return h(ctx, w, r)
+func (h HandlerFunc) Handle(w http.ResponseWriter, r *http.Request) error {
+	return h(w, r)
 }
 
 // Handler is an interface for handling HTTP request.
 type Handler interface {
-	Handle(context.Context, http.ResponseWriter, *http.Request) error
+	Handle(http.ResponseWriter, *http.Request) error
 }
 
 // Middleware is API handler middleware.
@@ -133,7 +132,7 @@ func (api *API) Attach(mux *http.ServeMux) {
 
 // VersionHandler returns the handler for API version.
 func (api *API) VersionHandler() Handler {
-	h := handler.Func(func(_ context.Context, w http.ResponseWriter, r *http.Request) error {
+	h := handler.Func(func(w http.ResponseWriter, r *http.Request) error {
 		enc := json.NewEncoder(w)
 		enc.Encode(struct {
 			Version string `json:"version"`
@@ -153,7 +152,7 @@ func (api *API) CreateCardHandler() Handler {
 
 func handlerAdapter(h Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		h.Handle(context.TODO(), w, r)
+		h.Handle(w, r)
 	})
 }
 

@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -18,8 +17,8 @@ type Middleware func(handler.Handler) handler.Handler
 // For all other errors a generic 500 service.ErrorResponse will be sent.
 func Error() Middleware {
 	return func(prev handler.Handler) handler.Handler {
-		return handler.Func(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-			err := prev.Handle(ctx, w, r)
+		return handler.Func(func(w http.ResponseWriter, r *http.Request) error {
+			err := prev.Handle(w, r)
 			if err == nil {
 				return nil
 			}
@@ -49,8 +48,8 @@ func Error() Middleware {
 // ErrorLog logs the error returned by the wrapped handler prev.
 func ErrorLog(logger *log.Logger) Middleware {
 	return func(prev handler.Handler) handler.Handler {
-		return handler.Func(func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-			err := prev.Handle(ctx, w, r)
+		return handler.Func(func(w http.ResponseWriter, r *http.Request) error {
+			err := prev.Handle(w, r)
 			if err != nil {
 				logger.Print(err)
 			}

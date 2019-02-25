@@ -1,7 +1,8 @@
+// +build !integration
+
 package handler_test
 
 import (
-	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -25,7 +26,7 @@ func TestNew(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		th := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			h.Handle(context.TODO(), w, r)
+			h.Handle(w, r)
 		})
 		th(w, req)
 
